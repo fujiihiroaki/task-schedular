@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <PublishAot>true</PublishAot>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <RootNamespace>Jiifureit.TaskSchedular</RootNamespace>
+        <Title>TaskSchedular</Title>
+        <Authors>(c) 2026 Hiroaki Fujii</Authors>
+        <Description>A command-line tool that displays tasks to be performed using Markdown files</Description>
+        <Copyright>Hiroaki Fujii 2026</Copyright>
+        <PackageProjectUrl>https://github.com/fujiihiroaki/task-schedular</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/fujiihiroaki/task-schedular/blob/main/LICENSE</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/fujiihiroaki/task-schedular</RepositoryUrl>
+        <PackageReleaseNotes>A command-line tool that displays tasks to be performed using Markdown files</PackageReleaseNotes>
+        <Company>Hiroaki Fujii</Company>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Markdig" Version="0.44.0"/>
+    </ItemGroup>
+
+</Project>
