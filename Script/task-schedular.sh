@@ -9,4 +9,4 @@ ARGS=(
   "--out" "$SCRIPT_DIR/Tasks.md"
 )
 
-exec "$SCRIPT_DIR/TaskSchedular.exe" "${ARGS[@]}"
+exec "$SCRIPT_DIR/TaskSchedular" "${ARGS[@]}"
