@@ -205,7 +205,11 @@ namespace Jiifureit.TaskSchedular;
 
 #region
 
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 #endregion
@@ -215,30 +219,27 @@ using System.Text.RegularExpressions;
 /// チェックリスト形式のタスクとメタデータ（due, start, lead, pace, p, est, tag）を解析します。
 /// </summary>
 internal static partial class MarkdownTaskParser {
+
     // - [ ] xxx
     // - [x] xxx
-    readonly static Regex taskLine =
-        new(@"^\s*[-*]\s+\[(?<done>[ xX])\]\s+(?<body>.+?)\s*$", RegexOptions.Compiled);
+    readonly static Regex taskLine = new(@"^\s*[-*]\s+\[(?<done>[ xX])\]\s+(?<body>.+?)\s*$", RegexOptions.Compiled);
 
     // meta: due/start/lead/pace/p/est/tag
-    readonly static Regex metaToken =
-        new(@"\b(?<key>due|start|lead|pace|p|est|tag)\s*:\s*(?<val>[^\s]+)\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    readonly static Regex metaToken = new(@"\b(?<key>due|start|lead|pace|p|est|tag)\s*:\s*(?<val>[^\s]+)\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    readonly static Regex heading =
-        new(@"^\s{0,3}#{1,6}\s+(?<text>.+?)\s*$", RegexOptions.Compiled);
+    readonly static Regex heading = new(@"^\s{0,3}#{1,6}\s+(?<text>.+?)\s*$", RegexOptions.Compiled);
 
-    readonly static Regex dateInHeading =
-        new(@"\b(?<date>\d{4}-\d{2}-\d{2})\b", RegexOptions.Compiled);
+    readonly static Regex dateInHeading = new(@"\b(?<date>\d{4}-\d{2}-\d{2})\b", RegexOptions.Compiled);
 
     /// <summary>
     /// Markdown文字列を解析してタスクアイテムのリストを生成します。
     /// </summary>
     /// <param name="markdown">解析対象のMarkdown文字列</param>
     /// <returns>解析されたタスクアイテムのリスト</returns>
-    public static List<TaskItem> Parse(String markdown)
+    public static List<TaskItem> Parse(string markdown)
     {
         var tasks = new List<TaskItem>();
-        String? currentSection = null;
+        string? currentSection = null;
         DateTime? currentSectionDate = null;
 
         foreach (var line in _ReadLines(markdown))
@@ -288,9 +289,9 @@ internal static partial class MarkdownTaskParser {
     /// </summary>
     /// <param name="markdown">検索対象のMarkdown文字列</param>
     /// <returns>抽出されたタスクIDのセット</returns>
-    public static HashSet<String> ExtractTaskIds(String markdown)
+    public static HashSet<string> ExtractTaskIds(string markdown)
     {
-        var set = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+        var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var line in _ReadLines(markdown))
         {
             var idx = line.IndexOf("<!-- id:", StringComparison.OrdinalIgnoreCase);
@@ -312,7 +313,7 @@ internal static partial class MarkdownTaskParser {
     /// </summary>
     /// <param name="s">分割対象の文字列</param>
     /// <returns>行のシーケンス</returns>
-    static IEnumerable<String> _ReadLines(String s)
+    static IEnumerable<string> _ReadLines(string s)
     {
         using var sr = new StringReader(s);
         while (sr.ReadLine() is {} line)
@@ -326,7 +327,7 @@ internal static partial class MarkdownTaskParser {
     /// </summary>
     /// <param name="headingText">見出しテキスト</param>
     /// <returns>抽出された日付。見つからない場合はnull</returns>
-    static DateTime? _TryParseDateFromHeading(String headingText)
+    static DateTime? _TryParseDateFromHeading(string headingText)
     {
         var m = dateInHeading.Match(headingText);
         if (!m.Success) return null;
@@ -348,7 +349,7 @@ internal static partial class MarkdownTaskParser {
     /// </summary>
     /// <param name="body">タスク本文</param>
     /// <returns>タイトルとメタデータのタプル</returns>
-    static (String title, String meta) _SplitTitleAndMeta(String body)
+    static (string title, string meta) _SplitTitleAndMeta(string body)
     {
         var tokens = metaToken.Matches(body);
         if (tokens.Count == 0) return (body, "");
@@ -369,7 +370,7 @@ internal static partial class MarkdownTaskParser {
     /// </summary>
     /// <param name="item">設定対象のTaskItem</param>
     /// <param name="meta">メタデータ文字列</param>
-    static void _ApplyMeta(TaskItem item, String meta)
+    static void _ApplyMeta(TaskItem item, string meta)
     {
         foreach (Match m in metaToken.Matches(meta))
         {
@@ -431,7 +432,7 @@ internal static partial class MarkdownTaskParser {
     /// <param name="s">見積もり時間文字列</param>
     /// <param name="ts">変換されたTimeSpan</param>
     /// <returns>変換に成功した場合true</returns>
-    static Boolean _TryParseEstimate(String s, out TimeSpan ts)
+    static bool _TryParseEstimate(string s, out TimeSpan ts)
     {
         // est: 30m / 2h / 1d（d=8h換算）
         ts = TimeSpan.Zero;
@@ -458,7 +459,7 @@ internal static partial class MarkdownTaskParser {
     /// <param name="s">リードタイム文字列</param>
     /// <param name="ts">変換されたTimeSpan</param>
     /// <returns>変換に成功した場合true</returns>
-    static Boolean _TryParseLead(String s, out TimeSpan ts)
+    static bool _TryParseLead(string s, out TimeSpan ts)
     {
         // lead: 90d / 12w / 3m（m=30d）/ 1y（365d）
         ts = TimeSpan.Zero;
@@ -486,7 +487,7 @@ internal static partial class MarkdownTaskParser {
     /// <param name="title">タスクタイトル</param>
     /// <param name="meta">メタデータ文字列</param>
     /// <returns>8桁の16進数ハッシュ文字列</returns>
-    static String _MakeStableId(String title, String meta)
+    static string _MakeStableId(string title, string meta)
     {
         var basis = (title + "|" + meta).Trim().ToLowerInvariant();
         basis = _MyRegex1().Replace(basis, " ");

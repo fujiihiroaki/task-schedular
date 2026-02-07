@@ -203,16 +203,25 @@
  */
 namespace Jiifureit.TaskSchedular;
 
+#region
+
+using System;
+using System.IO;
+using System.Threading.Tasks;
+
+#endregion
+
 /// <summary>
 /// アプリケーションのエントリーポイント。コマンドライン引数を解析し、once/watchコマンドを実行します。
 /// </summary>
 internal static class Program {
+
     /// <summary>
     /// アプリケーションのメインエントリーポイント。
     /// </summary>
     /// <param name="args">コマンドライン引数。[0]: コマンド(once/watch), [1]: 入力ファイルパス</param>
     /// <returns>終了コード。成功時0、エラー時1</returns>
-    public async static Task<Int32> Main(String[] args)
+    public async static Task<int> Main(string[] args)
     {
         if (args.Length < 1)
         {

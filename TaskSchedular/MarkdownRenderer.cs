@@ -205,17 +205,22 @@ namespace Jiifureit.TaskSchedular;
 
 #region
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 
 #endregion
 
 /// <summary>
-/// ランク付けされたタスクをMarkdown形式で出力するレンダラークラス。
-/// タスクの優先度、スコア、理由などを見やすく整形して出力します。
+///     ランク付けされたタスクをMarkdown形式で出力するレンダラークラス。
+///     タスクの優先度、スコア、理由などを見やすく整形して出力します。
 /// </summary>
 internal static class MarkdownRenderer {
+
     /// <summary>
-    /// ランク付けされたタスクをMarkdown形式の文字列に変換します。
+    ///     ランク付けされたタスクをMarkdown形式の文字列に変換します。
     /// </summary>
     /// <param name="ranked">ランク付けされたタスクリスト</param>
     /// <param name="today">基準日</param>
@@ -263,7 +268,7 @@ internal static class MarkdownRenderer {
     }
 
     /// <summary>
-    /// タスクリストをセクションとして出力します。
+    ///     タスクリストをセクションとして出力します。
     /// </summary>
     /// <param name="sb">出力先のStringBuilder</param>
     /// <param name="title">セクションタイトル</param>
@@ -290,7 +295,7 @@ internal static class MarkdownRenderer {
             var newMark = t.IsNew ? " **NEW**" : "";
             var due = t.Due is {} d ? $" due:{d:yyyy-MM-dd}" : "";
             var start = t.Start is {} s ? $" start:{s:yyyy-MM-dd}" : "";
-            var lead = t.Lead is {} l ? $" lead:{(Int32) l.TotalDays}d" : "";
+            var lead = t.Lead is {} l ? $" lead:{(int) l.TotalDays}d" : "";
             var pace = !string.IsNullOrWhiteSpace(t.Pace) ? $" pace:{t.Pace}" : "";
             var p = t.ManualPriority is {} mp ? $" p:{mp}" : "";
             var est = t.Estimate is {} e ? $" est:{_FormatEst(e)}" : "";
@@ -304,15 +309,15 @@ internal static class MarkdownRenderer {
     }
 
     /// <summary>
-    /// TimeSpanを人間が読みやすい形式（m/h/d）にフォーマットします。
+    ///     TimeSpanを人間が読みやすい形式（m/h/d）にフォーマットします。
     /// </summary>
     /// <param name="ts">フォーマット対象のTimeSpan</param>
     /// <returns>フォーマットされた文字列</returns>
     static string _FormatEst(TimeSpan ts)
     {
-        if (ts.TotalMinutes < 60) return $"{(Int32) ts.TotalMinutes}m";
-        if (ts.TotalHours < 8) return $"{(Int32) ts.TotalHours}h";
+        if (ts.TotalMinutes < 60) return $"{(int) ts.TotalMinutes}m";
+        if (ts.TotalHours < 8) return $"{(int) ts.TotalHours}h";
 
-        return $"{(Int32) (ts.TotalHours / 8)}d";
+        return $"{(int) (ts.TotalHours / 8)}d";
     }
 }

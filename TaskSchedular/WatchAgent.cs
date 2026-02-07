@@ -205,7 +205,11 @@ namespace Jiifureit.TaskSchedular;
 
 #region
 
+using System;
 using System.Diagnostics;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 #endregion
 
@@ -214,6 +218,7 @@ using System.Diagnostics;
 /// FileSystemWatcherを使用してファイルシステムイベントを検出します。
 /// </summary>
 internal sealed class WatchAgent : IDisposable {
+
     readonly string _inputFullPath;
 
     readonly string _outPath;
@@ -313,7 +318,7 @@ internal sealed class WatchAgent : IDisposable {
         await _runLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            const Int32 MAX_TRY = 6;
+            const int MAX_TRY = 6;
             for (var i = 0; i < MAX_TRY; i++)
             {
                 try

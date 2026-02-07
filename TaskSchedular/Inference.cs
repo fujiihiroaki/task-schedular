@@ -203,11 +203,19 @@
  */
 namespace Jiifureit.TaskSchedular;
 
+#region
+
+using System;
+using System.Linq;
+
+#endregion
+
 /// <summary>
 /// タスクの開始日を自動推論するクラス。
 /// pace、tag、タイトルのキーワードからリードタイムを推定し、開始日を計算します。
 /// </summary>
 internal static class Inference {
+
     /// <summary>
     /// タスクの開始日を自動推論して設定します。
     /// </summary>
@@ -239,7 +247,7 @@ internal static class Inference {
     /// </summary>
     /// <param name="pace">ペース文字列（slow/normal/fast）</param>
     /// <returns>対応するリードタイム。該当しない場合はnull</returns>
-    static TimeSpan? _PaceToLead(String? pace)
+    static TimeSpan? _PaceToLead(string? pace)
         => pace switch
         {
             "slow" => TimeSpan.FromDays(120),
@@ -286,7 +294,7 @@ internal static class Inference {
     /// <param name="s">検索対象の文字列</param>
     /// <param name="keys">検索するキーワード配列</param>
     /// <returns>いずれかのキーワードが含まれている場合true</returns>
-    static bool _ContainsAny(String s, params String[] keys)
+    static bool _ContainsAny(string s, params string[] keys)
     {
         return keys.Any(k => s.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0);
 
