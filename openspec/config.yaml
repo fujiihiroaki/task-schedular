@@ -20,7 +20,6 @@ schema: spec-driven
 #       - Break tasks into chunks of max 2 hours
 #
 context: |
-context: |
   言語：日本語
   すべての成果物は日本語で作成してください。  
   しかし:
