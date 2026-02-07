@@ -294,7 +294,7 @@ public class RunnerIntegrationTests {
         // Arrange
         var inputPath = Path.GetTempFileName();
         var outputPath = Path.GetTempFileName();
-        var today = DateTime.Now.Date;
+        var today = new DateTime(2026, 2, 1);
         var markdown = $@"- [ ] 今タスク start:{today:yyyy-MM-dd}
 - [ ] 次タスク start:{today.AddDays(1):yyyy-MM-dd}
 - [ ] 先タスク start:{today.AddDays(10):yyyy-MM-dd}";
@@ -309,7 +309,7 @@ public class RunnerIntegrationTests {
             Console.SetOut(sw);
 
             // Act
-            Runner.Run(inputPath, outputPath);
+            Runner.Run(inputPath, outputPath, today);
 
             // Assert
             var consoleOutput = sw.ToString();
@@ -332,7 +332,7 @@ public class RunnerIntegrationTests {
         // Arrange
         var inputPath = Path.GetTempFileName();
         var outputPath = Path.GetTempFileName();
-        var today = DateTime.Now.Date;
+        var today = new DateTime(2026, 2, 1);
         var markdown = $@"- [ ] 今タスク start:{today:yyyy-MM-dd}
 - [ ] 次タスク start:{today.AddDays(1):yyyy-MM-dd}
 - [ ] 高スコア start:{today.AddDays(10):yyyy-MM-dd} p:1
@@ -350,7 +350,7 @@ public class RunnerIntegrationTests {
             Console.SetOut(sw);
 
             // Act
-            Runner.Run(inputPath, outputPath);
+            Runner.Run(inputPath, outputPath, today);
 
             // Assert
             var consoleOutput = sw.ToString();
@@ -377,7 +377,7 @@ public class RunnerIntegrationTests {
         // Arrange
         var inputPath = Path.GetTempFileName();
         var outputPath = Path.GetTempFileName();
-        var today = DateTime.Now.Date;
+        var today = new DateTime(2026, 2, 1);
         var markdown = $@"- [ ] 今タスク1 start:{today:yyyy-MM-dd}
 - [ ] 今タスク2 start:{today:yyyy-MM-dd}
 - [ ] 今タスク3 start:{today:yyyy-MM-dd}
@@ -395,7 +395,7 @@ public class RunnerIntegrationTests {
             Console.SetOut(sw);
 
             // Act
-            Runner.Run(inputPath, outputPath);
+            Runner.Run(inputPath, outputPath, today);
 
             // Assert
             var consoleOutput = sw.ToString();
@@ -422,7 +422,7 @@ public class RunnerIntegrationTests {
         // Arrange
         var inputPath = Path.GetTempFileName();
         var outputPath = Path.GetTempFileName();
-        var today = DateTime.Now.Date;
+        var today = new DateTime(2026, 2, 1);
         var markdown = $"- [ ] NEWタスク start:{today:yyyy-MM-dd}";
 
         File.WriteAllText(inputPath, markdown);
@@ -435,7 +435,7 @@ public class RunnerIntegrationTests {
             Console.SetOut(sw);
 
             // Act
-            Runner.Run(inputPath, outputPath);
+            Runner.Run(inputPath, outputPath, today);
 
             // Assert
             var consoleOutput = sw.ToString();
