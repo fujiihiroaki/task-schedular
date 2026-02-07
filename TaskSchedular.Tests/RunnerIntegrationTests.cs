@@ -289,6 +289,169 @@ public class RunnerIntegrationTests {
     }
 
     [Fact]
+    public void Run_ConsoleSummary_IncludesNowAndNext()
+    {
+        // Arrange
+        var inputPath = Path.GetTempFileName();
+        var outputPath = Path.GetTempFileName();
+        var today = DateTime.Now.Date;
+        var markdown = $@"- [ ] 今タスク start:{today:yyyy-MM-dd}
+- [ ] 次タスク start:{today.AddDays(1):yyyy-MM-dd}
+- [ ] 先タスク start:{today.AddDays(10):yyyy-MM-dd}";
+
+        File.WriteAllText(inputPath, markdown);
+
+        var originalOut = Console.Out;
+
+        try
+        {
+            using var sw = new StringWriter();
+            Console.SetOut(sw);
+
+            // Act
+            Runner.Run(inputPath, outputPath);
+
+            // Assert
+            var consoleOutput = sw.ToString();
+            Assert.Contains("[今すぐ] 今タスク", consoleOutput);
+            Assert.Contains("[次にやる] 次タスク", consoleOutput);
+            Assert.Contains("score:", consoleOutput);
+        }
+        finally
+        {
+            // Cleanup
+            if (File.Exists(inputPath)) File.Delete(inputPath);
+            if (File.Exists(outputPath)) File.Delete(outputPath);
+            Console.SetOut(originalOut);
+        }
+    }
+
+    [Fact]
+    public void Run_ConsoleSummary_FillsToFiveWithHighestScores()
+    {
+        // Arrange
+        var inputPath = Path.GetTempFileName();
+        var outputPath = Path.GetTempFileName();
+        var today = DateTime.Now.Date;
+        var markdown = $@"- [ ] 今タスク start:{today:yyyy-MM-dd}
+- [ ] 次タスク start:{today.AddDays(1):yyyy-MM-dd}
+- [ ] 高スコア start:{today.AddDays(10):yyyy-MM-dd} p:1
+- [ ] 中スコア start:{today.AddDays(10):yyyy-MM-dd} p:2
+- [ ] 低スコア start:{today.AddDays(10):yyyy-MM-dd} p:5
+- [ ] 最低スコア start:{today.AddDays(10):yyyy-MM-dd}";
+
+        File.WriteAllText(inputPath, markdown);
+
+        var originalOut = Console.Out;
+
+        try
+        {
+            using var sw = new StringWriter();
+            Console.SetOut(sw);
+
+            // Act
+            Runner.Run(inputPath, outputPath);
+
+            // Assert
+            var consoleOutput = sw.ToString();
+            var summaryLines = consoleOutput
+                .Split('\n')
+                .Where(line => line.Contains("score:"))
+                .ToList();
+
+            Assert.Equal(5, summaryLines.Count);
+            Assert.DoesNotContain(summaryLines, line => line.Contains("最低スコア"));
+        }
+        finally
+        {
+            // Cleanup
+            if (File.Exists(inputPath)) File.Delete(inputPath);
+            if (File.Exists(outputPath)) File.Delete(outputPath);
+            Console.SetOut(originalOut);
+        }
+    }
+
+    [Fact]
+    public void Run_ConsoleSummary_DoesNotFillWhenNowAndNextAreFiveOrMore()
+    {
+        // Arrange
+        var inputPath = Path.GetTempFileName();
+        var outputPath = Path.GetTempFileName();
+        var today = DateTime.Now.Date;
+        var markdown = $@"- [ ] 今タスク1 start:{today:yyyy-MM-dd}
+- [ ] 今タスク2 start:{today:yyyy-MM-dd}
+- [ ] 今タスク3 start:{today:yyyy-MM-dd}
+- [ ] 次タスク1 start:{today.AddDays(1):yyyy-MM-dd}
+- [ ] 次タスク2 start:{today.AddDays(2):yyyy-MM-dd}
+- [ ] 補完候補 start:{today.AddDays(10):yyyy-MM-dd} p:1";
+
+        File.WriteAllText(inputPath, markdown);
+
+        var originalOut = Console.Out;
+
+        try
+        {
+            using var sw = new StringWriter();
+            Console.SetOut(sw);
+
+            // Act
+            Runner.Run(inputPath, outputPath);
+
+            // Assert
+            var consoleOutput = sw.ToString();
+            var summaryLines = consoleOutput
+                .Split('\n')
+                .Where(line => line.Contains("score:"))
+                .ToList();
+
+            Assert.Equal(5, summaryLines.Count);
+            Assert.DoesNotContain(summaryLines, line => line.Contains("補完候補"));
+        }
+        finally
+        {
+            // Cleanup
+            if (File.Exists(inputPath)) File.Delete(inputPath);
+            if (File.Exists(outputPath)) File.Delete(outputPath);
+            Console.SetOut(originalOut);
+        }
+    }
+
+    [Fact]
+    public void Run_ConsoleSummary_MarksNewTasksInConsoleOutput()
+    {
+        // Arrange
+        var inputPath = Path.GetTempFileName();
+        var outputPath = Path.GetTempFileName();
+        var today = DateTime.Now.Date;
+        var markdown = $"- [ ] NEWタスク start:{today:yyyy-MM-dd}";
+
+        File.WriteAllText(inputPath, markdown);
+
+        var originalOut = Console.Out;
+
+        try
+        {
+            using var sw = new StringWriter();
+            Console.SetOut(sw);
+
+            // Act
+            Runner.Run(inputPath, outputPath);
+
+            // Assert
+            var consoleOutput = sw.ToString();
+            Assert.Contains("NEWタスク", consoleOutput);
+            Assert.Contains(" NEW", consoleOutput);
+        }
+        finally
+        {
+            // Cleanup
+            if (File.Exists(inputPath)) File.Delete(inputPath);
+            if (File.Exists(outputPath)) File.Delete(outputPath);
+            Console.SetOut(originalOut);
+        }
+    }
+
+    [Fact]
     public void Run_NewTaskDetection_MarksNewTasks()
     {
         // Arrange

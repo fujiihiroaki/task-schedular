@@ -203,17 +203,25 @@
  */
 namespace Jiifureit.TaskSchedular;
 
+#region
+
+using System;
+using System.Collections.Generic;
+
+#endregion
+
 // ---------------- Models ----------------
 /// <summary>
 /// Markdownファイルから解析されたタスクアイテムを表すモデルクラス。
 /// 期限、開始日、優先度、タグなどのメタデータとスコアリング結果を保持します。
 /// </summary>
 internal sealed class TaskItem {
-   // ReSharper disable UnusedAutoPropertyAccessor.Global
-   public required string RawLine { get; init; }
-   // ReSharper restore UnusedAutoPropertyAccessor.Global
 
-   public required string Title { get; init; }
+    // ReSharper disable UnusedAutoPropertyAccessor.Global
+    public required string RawLine { get; init; }
+    // ReSharper restore UnusedAutoPropertyAccessor.Global
+
+    public required string Title { get; init; }
 
     public bool IsDone { get; init; }
 

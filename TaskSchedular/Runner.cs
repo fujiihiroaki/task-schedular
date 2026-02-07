@@ -205,16 +205,21 @@ namespace Jiifureit.TaskSchedular;
 
 #region
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 
 #endregion
 
 /// <summary>
-/// タスク処理のメインフロー（読込→解析→ランク付け→出力）を実行するランナークラス。
+///     タスク処理のメインフロー（読込→解析→ランク付け→出力）を実行するランナークラス。
 /// </summary>
 internal static class Runner {
+
     /// <summary>
-    /// Markdownファイルからタスクを読み込み、ランク付けして出力します。
+    ///     Markdownファイルからタスクを読み込み、ランク付けして出力します。
     /// </summary>
     /// <param name="inputPath">入力Markdownファイルのパス</param>
     /// <param name="outPath">出力Markdownファイルのパス</param>
@@ -237,17 +242,99 @@ internal static class Runner {
         var output = MarkdownRenderer.Render(ranked, today, inputPath);
 
         // 差分がないなら書き込まない（IO削減）
+        var changed = true;
         if (File.Exists(outPath))
         {
             var old = File.ReadAllText(outPath, Encoding.UTF8);
             if (string.Equals(old, output, StringComparison.Ordinal))
-            {
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] No changes.");
-                return;
-            }
+                changed = false;
         }
 
-        File.WriteAllText(outPath, output, new UTF8Encoding(false));
-        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Updated: {outPath}");
+        if (changed)
+        {
+            File.WriteAllText(outPath, output, new UTF8Encoding(false));
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Updated: {outPath}");
+        }
+        else
+        {
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] No changes.");
+        }
+
+        _WriteConsoleSummary(ranked, today);
+    }
+
+    /// <summary>
+    ///     コンソールにタスクのサマリー情報を出力します。
+    /// </summary>
+    /// <param name="ranked">ランク付けされたタスクのリスト。</param>
+    /// <param name="today">現在の日付。</param>
+    static void _WriteConsoleSummary(List<TaskItem> ranked, DateTime today)
+    {
+        var now = ranked.Where(t => _EffectiveDate(t) is {} d && d <= today).ToList();
+        var next2 = ranked.Where(t => _EffectiveDate(t) is {} d && d > today && d <= today.AddDays(2)).ToList();
+
+        var selected = new List<TaskItem>();
+        selected.AddRange(now);
+        selected.AddRange(next2);
+
+        var selectedIds = new HashSet<string>(selected.Select(t => t.Id), StringComparer.OrdinalIgnoreCase);
+
+        if (selected.Count < 5)
+        {
+            var remainder = ranked
+                .Where(t => !selectedIds.Contains(t.Id))
+                .OrderByDescending(t => t.Score)
+                .ThenBy(t => t.Title, StringComparer.OrdinalIgnoreCase)
+                .Take(5 - selected.Count)
+                .ToList();
+
+            selected.AddRange(remainder);
+        }
+
+        Console.WriteLine("--- Top Tasks ---");
+
+        if (selected.Count == 0)
+        {
+            Console.WriteLine("（なし）");
+            return;
+        }
+
+        foreach (var t in selected)
+        {
+            var label = _GetSectionLabel(t, today);
+            var newMark = t.IsNew ? " NEW" : "";
+            Console.WriteLine($"[{label}] {t.Title} score:{t.Score:0}{newMark}");
+        }
+    }
+
+    /// <summary>
+    ///     タスクアイテムの有効開始日、もしくは期限を取得します。
+    /// </summary>
+    /// <param name="t">有効日を判定する対象のタスクアイテム。</param>
+    /// <returns>
+    ///     タスクの開始日が設定されている場合はその日付、そうでない場合は期限日を返します。
+    ///     日付が設定されていない場合はnullを返します。
+    /// </returns>
+    static DateTime? _EffectiveDate(TaskItem t) => t.Start ?? t.Due;
+
+    /// <summary>
+    ///     指定されたタスクアイテムのセクションラベルを取得します。
+    ///     ラベルはタスクの有効開始日や期限に基づき、優先度を示す形で分類されます。
+    /// </summary>
+    /// <param name="t">セクションラベルを判定する対象のタスクアイテム。</param>
+    /// <param name="today">現在の日付を基準とする比較日。</param>
+    /// <returns>
+    ///     タスクの優先度を示すセクションラベル文字列を返します。
+    ///     有効開始日や期限により「今すぐ」「次にやる」「今週中」「余裕があれば」に分類されます。
+    /// </returns>
+    static string _GetSectionLabel(TaskItem t, DateTime today)
+    {
+        var effective = _EffectiveDate(t);
+        if (effective is null) return "余裕があれば";
+        if (effective <= today) return "今すぐ";
+        if (effective <= today.AddDays(2)) return "次にやる";
+        if (effective <= today.AddDays(7)) return "今週中";
+
+        return "余裕があれば";
     }
 }

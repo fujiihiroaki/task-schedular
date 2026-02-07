@@ -203,11 +203,20 @@
  */
 namespace Jiifureit.TaskSchedular;
 
+#region
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+#endregion
+
 /// <summary>
 /// タスクに優先度スコアを付与し、ランキングを行うクラス。
 /// 期限、手動優先度、開始日、見積もり時間などを考慮してスコアを計算します。
 /// </summary>
 internal static class TaskRanker {
+
     /// <summary>
     /// タスクリストをスコアリングしてランク付けします。
     /// </summary>
@@ -229,7 +238,7 @@ internal static class TaskRanker {
             .OrderByDescending(t => t.Score)
             .ThenBy(t => _EffectiveDate(t) ?? DateTime.MaxValue)
             .ThenBy(t => t.ManualPriority ?? int.MaxValue)
-            .ThenBy(t => t.Title, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(keySelector : t => t.Title, StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
 
@@ -246,10 +255,10 @@ internal static class TaskRanker {
     /// <param name="t">対象のタスク</param>
     /// <param name="today">基準日</param>
     /// <returns>スコアと理由のタプル</returns>
-    static (Double score, String reason) _Score(TaskItem t, DateTime today)
+    static (double score, string reason) _Score(TaskItem t, DateTime today)
     {
-        var reasons = new List<String>();
-        Double score = 0;
+        var reasons = new List<string>();
+        double score = 0;
 
         // Manual priority: p:1 highest
         if (t.ManualPriority is {} p)
@@ -264,7 +273,7 @@ internal static class TaskRanker {
         if (effective is {} d)
         {
             var days = (d - today).TotalDays;
-            Double boost =
+            double boost =
                 days <= 0 ? 120 :
                 days <= 1 ? 90 :
                 days <= 3 ? 70 :
@@ -284,7 +293,7 @@ internal static class TaskRanker {
         // Quick wins
         if (t.Estimate is {} est)
         {
-            Double boost =
+            double boost =
                 est <= TimeSpan.FromMinutes(15) ? 25 :
                 est <= TimeSpan.FromMinutes(30) ? 18 :
                 est <= TimeSpan.FromHours(1) ? 10 :
@@ -321,11 +330,11 @@ internal static class TaskRanker {
     /// </summary>
     /// <param name="ts">フォーマット対象のTimeSpan</param>
     /// <returns>フォーマットされた文字列</returns>
-    static String _FormatEst(TimeSpan ts)
+    static string _FormatEst(TimeSpan ts)
     {
-        if (ts.TotalMinutes < 60) return $"{(Int32) ts.TotalMinutes}m";
-        if (ts.TotalHours < 8) return $"{(Int32) ts.TotalHours}h";
+        if (ts.TotalMinutes < 60) return $"{(int) ts.TotalMinutes}m";
+        if (ts.TotalHours < 8) return $"{(int) ts.TotalHours}h";
 
-        return $"{(Int32) (ts.TotalHours / 8)}d";
+        return $"{(int) (ts.TotalHours / 8)}d";
     }
 }
