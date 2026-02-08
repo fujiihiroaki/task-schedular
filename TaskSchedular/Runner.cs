@@ -223,13 +223,14 @@ internal static class Runner {
     /// </summary>
     /// <param name="inputPath">入力Markdownファイルのパス</param>
     /// <param name="outPath">出力Markdownファイルのパス</param>
-    public static void Run(string inputPath, string outPath)
+    /// <param name="today">処理の基準日（省略時は現在日時）</param>
+    public static void Run(string inputPath, string outPath, DateTime? today = null)
     {
         var md = File.ReadAllText(inputPath, Encoding.UTF8);
         var tasks = MarkdownTaskParser.Parse(md);
 
-        var today = DateTime.Now.Date;
-        var ranked = TaskRanker.Rank(tasks, today);
+        var baseDate = today ?? DateTime.Now.Date;
+        var ranked = TaskRanker.Rank(tasks, baseDate);
 
         // NEW 判定（前回出力に埋めた id と比較）
         var previousIds = File.Exists(outPath)
@@ -239,7 +240,7 @@ internal static class Runner {
         foreach (var t in ranked)
             t.IsNew = !previousIds.Contains(t.Id);
 
-        var output = MarkdownRenderer.Render(ranked, today, inputPath);
+        var output = MarkdownRenderer.Render(ranked, baseDate, inputPath);
 
         // 差分がないなら書き込まない（IO削減）
         var changed = true;
@@ -260,7 +261,7 @@ internal static class Runner {
             Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] No changes.");
         }
 
-        _WriteConsoleSummary(ranked, today);
+        _WriteConsoleSummary(ranked, baseDate);
     }
 
     /// <summary>
