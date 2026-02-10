@@ -221,7 +221,7 @@ internal static class Program {
     /// </summary>
     /// <param name="args">コマンドライン引数。[0]: コマンド(once/watch), [1]: 入力ファイルパス</param>
     /// <returns>終了コード。成功時0、エラー時1</returns>
-    public async static Task<int> Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         if (args.Length < 1)
         {
@@ -293,7 +293,7 @@ internal static class Program {
     /// <summary>
     /// 使用方法をコンソールに出力します。
     /// </summary>
-    static void _PrintUsage()
+    private static void _PrintUsage()
     {
         Console.WriteLine("Usage:");
         Console.WriteLine("  dotnet run -- once  <plan.md> [--out prioritized.md]");
@@ -306,7 +306,7 @@ internal static class Program {
     /// <param name="args">コマンドライン引数配列</param>
     /// <param name="key">検索するキー（例: "--out"）</param>
     /// <returns>キーに対応する値。見つからない場合はnull</returns>
-    static string? _GetArgValue(string[] args, string key)
+    private static string? _GetArgValue(string[] args, string key)
     {
         for (var i = 0; i < args.Length - 1; i++)
         {
@@ -322,7 +322,7 @@ internal static class Program {
     /// </summary>
     /// <param name="inputPath">入力Markdownファイルパス</param>
     /// <param name="outPath">出力Markdownファイルパス</param>
-    static void _SafeRun(string inputPath, string outPath)
+    private static void _SafeRun(string inputPath, string outPath)
     {
         try
         {

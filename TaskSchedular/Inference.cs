@@ -225,6 +225,9 @@ internal static class Inference {
         // start 明示は最優先
         if (t.Start is not null) return;
 
+        if (t.Due is null && t.PeriodEnd is not null && _IsCurrentPeriodSection(t.Section))
+            t.Due = t.PeriodEnd.Value.Date;
+
         // dueがなければ推定できない（Backlog扱い）
         if (t.Due is null) return;
 
@@ -247,7 +250,7 @@ internal static class Inference {
     /// </summary>
     /// <param name="pace">ペース文字列（slow/normal/fast）</param>
     /// <returns>対応するリードタイム。該当しない場合はnull</returns>
-    static TimeSpan? _PaceToLead(string? pace)
+    private static TimeSpan? _PaceToLead(string? pace)
         => pace switch
         {
             "slow" => TimeSpan.FromDays(120),
@@ -261,7 +264,7 @@ internal static class Inference {
     /// </summary>
     /// <param name="t">対象のタスク</param>
     /// <returns>推定されたリードタイム</returns>
-    static TimeSpan _GuessLeadFromTagsOrTitle(TaskItem t)
+    private static TimeSpan _GuessLeadFromTagsOrTitle(TaskItem t)
     {
         // tagベース（推奨）
         if (t.Tags.Contains("exam") || t.Tags.Contains("cert") || t.Tags.Contains("study"))
@@ -294,9 +297,14 @@ internal static class Inference {
     /// <param name="s">検索対象の文字列</param>
     /// <param name="keys">検索するキーワード配列</param>
     /// <returns>いずれかのキーワードが含まれている場合true</returns>
-    static bool _ContainsAny(string s, params string[] keys)
+    private static bool _ContainsAny(string s, params string[] keys)
     {
         return keys.Any(k => s.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0);
 
+    }
+
+    private static bool _IsCurrentPeriodSection(string? section)
+    {
+        return section?.Trim().StartsWith("今期の", StringComparison.Ordinal) ?? false;
     }
 }

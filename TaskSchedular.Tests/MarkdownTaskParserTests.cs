@@ -339,6 +339,53 @@ public class MarkdownTaskParserTests {
     }
 
     [Fact]
+    public void Parse_PeriodLine_SetsPeriodEnd()
+    {
+        // Arrange
+        var markdown = @"period: 2026-01-01 .. 2026-03-31
+
+- [ ] タスク1";
+
+        // Act
+        var result = MarkdownTaskParser.Parse(markdown);
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal(new DateTime(2026, 3, 31), result[0].PeriodEnd);
+    }
+
+    [Fact]
+    public void Parse_NoPeriodLine_DoesNotSetPeriodEnd()
+    {
+        // Arrange
+        var markdown = "- [ ] タスク1";
+
+        // Act
+        var result = MarkdownTaskParser.Parse(markdown);
+
+        // Assert
+        Assert.Single(result);
+        Assert.Null(result[0].PeriodEnd);
+    }
+
+    [Fact]
+    public void Parse_MultiplePeriodLines_UsesLast()
+    {
+        // Arrange
+        var markdown = @"period: 2026-01-01 .. 2026-03-31
+period: 2026-04-01 .. 2026-06-30
+
+- [ ] タスク1";
+
+        // Act
+        var result = MarkdownTaskParser.Parse(markdown);
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal(new DateTime(2026, 6, 30), result[0].PeriodEnd);
+    }
+
+    [Fact]
     public void Parse_EstimateFormats_ParsesCorrectly()
     {
         // Arrange

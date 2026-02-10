@@ -247,7 +247,7 @@ internal static class TaskRanker {
     /// </summary>
     /// <param name="t">対象のタスク</param>
     /// <returns>有効日付。どちらもない場合はnull</returns>
-    static DateTime? _EffectiveDate(TaskItem t) => t.Start ?? t.Due;
+    private static DateTime? _EffectiveDate(TaskItem t) => t.Start ?? t.Due;
 
     /// <summary>
     /// タスクのスコアと理由を計算します。
@@ -255,7 +255,7 @@ internal static class TaskRanker {
     /// <param name="t">対象のタスク</param>
     /// <param name="today">基準日</param>
     /// <returns>スコアと理由のタプル</returns>
-    static (double score, string reason) _Score(TaskItem t, DateTime today)
+    private static (double score, string reason) _Score(TaskItem t, DateTime today)
     {
         var reasons = new List<string>();
         double score = 0;
@@ -330,7 +330,7 @@ internal static class TaskRanker {
     /// </summary>
     /// <param name="ts">フォーマット対象のTimeSpan</param>
     /// <returns>フォーマットされた文字列</returns>
-    static string _FormatEst(TimeSpan ts)
+    private static string _FormatEst(TimeSpan ts)
     {
         if (ts.TotalMinutes < 60) return $"{(int) ts.TotalMinutes}m";
         if (ts.TotalHours < 8) return $"{(int) ts.TotalHours}h";

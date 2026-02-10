@@ -231,6 +231,8 @@ internal sealed class TaskItem {
 
     public DateTime? SectionDate { get; init; }
 
+    public DateTime? PeriodEnd { get; init; }
+
     public DateTime? Due { get; set; }// due:YYYY-MM-DD
 
     public DateTime? Start { get; set; }// start:YYYY-MM-DD (or inferred)

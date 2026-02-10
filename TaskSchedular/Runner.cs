@@ -223,13 +223,14 @@ internal static class Runner {
     /// </summary>
     /// <param name="inputPath">入力Markdownファイルのパス</param>
     /// <param name="outPath">出力Markdownファイルのパス</param>
-    public static void Run(string inputPath, string outPath)
+    /// <param name="today">処理の基準日（省略時は現在日時）</param>
+    public static void Run(string inputPath, string outPath, DateTime? today = null)
     {
         var md = File.ReadAllText(inputPath, Encoding.UTF8);
         var tasks = MarkdownTaskParser.Parse(md);
 
-        var today = DateTime.Now.Date;
-        var ranked = TaskRanker.Rank(tasks, today);
+        var baseDate = today ?? DateTime.Now.Date;
+        var ranked = TaskRanker.Rank(tasks, baseDate);
 
         // NEW 判定（前回出力に埋めた id と比較）
         var previousIds = File.Exists(outPath)
@@ -239,7 +240,7 @@ internal static class Runner {
         foreach (var t in ranked)
             t.IsNew = !previousIds.Contains(t.Id);
 
-        var output = MarkdownRenderer.Render(ranked, today, inputPath);
+        var output = MarkdownRenderer.Render(ranked, baseDate, inputPath);
 
         // 差分がないなら書き込まない（IO削減）
         var changed = true;
@@ -260,7 +261,7 @@ internal static class Runner {
             Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] No changes.");
         }
 
-        _WriteConsoleSummary(ranked, today);
+        _WriteConsoleSummary(ranked, baseDate);
     }
 
     /// <summary>
@@ -268,7 +269,7 @@ internal static class Runner {
     /// </summary>
     /// <param name="ranked">ランク付けされたタスクのリスト。</param>
     /// <param name="today">現在の日付。</param>
-    static void _WriteConsoleSummary(List<TaskItem> ranked, DateTime today)
+    private static void _WriteConsoleSummary(List<TaskItem> ranked, DateTime today)
     {
         var now = ranked.Where(t => _EffectiveDate(t) is {} d && d <= today).ToList();
         var next2 = ranked.Where(t => _EffectiveDate(t) is {} d && d > today && d <= today.AddDays(2)).ToList();
@@ -315,7 +316,7 @@ internal static class Runner {
     ///     タスクの開始日が設定されている場合はその日付、そうでない場合は期限日を返します。
     ///     日付が設定されていない場合はnullを返します。
     /// </returns>
-    static DateTime? _EffectiveDate(TaskItem t) => t.Start ?? t.Due;
+    private static DateTime? _EffectiveDate(TaskItem t) => t.Start ?? t.Due;
 
     /// <summary>
     ///     指定されたタスクアイテムのセクションラベルを取得します。
@@ -327,7 +328,7 @@ internal static class Runner {
     ///     タスクの優先度を示すセクションラベル文字列を返します。
     ///     有効開始日や期限により「今すぐ」「次にやる」「今週中」「余裕があれば」に分類されます。
     /// </returns>
-    static string _GetSectionLabel(TaskItem t, DateTime today)
+    private static string _GetSectionLabel(TaskItem t, DateTime today)
     {
         var effective = _EffectiveDate(t);
         if (effective is null) return "余裕があれば";

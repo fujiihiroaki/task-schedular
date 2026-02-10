@@ -516,4 +516,86 @@ public class InferenceTests {
         Assert.Equal(due.AddDays(-30), task.Start);
         Assert.Equal(TimeSpan.FromDays(30), task.Lead);
     }
+
+    [Fact]
+    public void ApplyAutoStart_CurrentPeriodSection_SetsDueFromPeriodEnd()
+    {
+        // Arrange
+        var periodEnd = new DateTime(2026, 3, 31);
+        var task = new TaskItem
+        {
+            RawLine = "test",
+            Title = "タスク",
+            Id = "1",
+            Section = "今期のバックログ",
+            PeriodEnd = periodEnd
+        };
+
+        // Act
+        Inference.ApplyAutoStart(task);
+
+        // Assert
+        Assert.Equal(periodEnd, task.Due);
+    }
+
+    [Fact]
+    public void ApplyAutoStart_CurrentPeriodSection_DoesNotOverrideExplicitDue()
+    {
+        // Arrange
+        var explicitDue = new DateTime(2026, 2, 28);
+        var task = new TaskItem
+        {
+            RawLine = "test",
+            Title = "タスク",
+            Id = "1",
+            Section = "今期のバックログ",
+            PeriodEnd = new DateTime(2026, 3, 31),
+            Due = explicitDue
+        };
+
+        // Act
+        Inference.ApplyAutoStart(task);
+
+        // Assert
+        Assert.Equal(explicitDue, task.Due);
+    }
+
+    [Fact]
+    public void ApplyAutoStart_NonCurrentPeriodSection_DoesNotSetDue()
+    {
+        // Arrange
+        var task = new TaskItem
+        {
+            RawLine = "test",
+            Title = "タスク",
+            Id = "1",
+            Section = "来月のタスク",
+            PeriodEnd = new DateTime(2026, 3, 31)
+        };
+
+        // Act
+        Inference.ApplyAutoStart(task);
+
+        // Assert
+        Assert.Null(task.Due);
+    }
+
+    [Fact]
+    public void ApplyAutoStart_NoPeriodEnd_DoesNotSetDue()
+    {
+        // Arrange
+        var task = new TaskItem
+        {
+            RawLine = "test",
+            Title = "タスク",
+            Id = "1",
+            Section = "今期のバックログ"
+        };
+
+        // Act
+        Inference.ApplyAutoStart(task);
+
+        // Assert
+        Assert.Null(task.Due);
+    }
 }
