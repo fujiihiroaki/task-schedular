@@ -222,11 +222,11 @@ internal static class Inference {
     /// <param name="t">開始日を推論するタスク</param>
     public static void ApplyAutoStart(TaskItem t)
     {
-        // start 明示は最優先
-        if (t.Start is not null) return;
-
         if (t.Due is null && t.PeriodEnd is not null && _IsCurrentPeriodSection(t.Section))
             t.Due = t.PeriodEnd.Value.Date;
+
+        // start 明示は最優先
+        if (t.Start is not null) return;
 
         // dueがなければ推定できない（Backlog扱い）
         if (t.Due is null) return;

@@ -539,6 +539,30 @@ public class InferenceTests {
     }
 
     [Fact]
+    public void ApplyAutoStart_CurrentPeriodSection_StartSet_SetsDueFromPeriodEnd()
+    {
+        // Arrange
+        var periodEnd = new DateTime(2026, 3, 31);
+        var explicitStart = new DateTime(2026, 2, 1);
+        var task = new TaskItem
+        {
+            RawLine = "test",
+            Title = "タスク",
+            Id = "1",
+            Section = "今期のバックログ",
+            PeriodEnd = periodEnd,
+            Start = explicitStart
+        };
+
+        // Act
+        Inference.ApplyAutoStart(task);
+
+        // Assert
+        Assert.Equal(periodEnd, task.Due);
+        Assert.Equal(explicitStart, task.Start);
+    }
+
+    [Fact]
     public void ApplyAutoStart_CurrentPeriodSection_DoesNotOverrideExplicitDue()
     {
         // Arrange
