@@ -268,7 +268,7 @@ internal static class Runner {
     /// </summary>
     /// <param name="ranked">ランク付けされたタスクのリスト。</param>
     /// <param name="today">現在の日付。</param>
-    static void _WriteConsoleSummary(List<TaskItem> ranked, DateTime today)
+    private static void _WriteConsoleSummary(List<TaskItem> ranked, DateTime today)
     {
         var now = ranked.Where(t => _EffectiveDate(t) is {} d && d <= today).ToList();
         var next2 = ranked.Where(t => _EffectiveDate(t) is {} d && d > today && d <= today.AddDays(2)).ToList();
@@ -315,7 +315,7 @@ internal static class Runner {
     ///     タスクの開始日が設定されている場合はその日付、そうでない場合は期限日を返します。
     ///     日付が設定されていない場合はnullを返します。
     /// </returns>
-    static DateTime? _EffectiveDate(TaskItem t) => t.Start ?? t.Due;
+    private static DateTime? _EffectiveDate(TaskItem t) => t.Start ?? t.Due;
 
     /// <summary>
     ///     指定されたタスクアイテムのセクションラベルを取得します。
@@ -327,7 +327,7 @@ internal static class Runner {
     ///     タスクの優先度を示すセクションラベル文字列を返します。
     ///     有効開始日や期限により「今すぐ」「次にやる」「今週中」「余裕があれば」に分類されます。
     /// </returns>
-    static string _GetSectionLabel(TaskItem t, DateTime today)
+    private static string _GetSectionLabel(TaskItem t, DateTime today)
     {
         var effective = _EffectiveDate(t);
         if (effective is null) return "余裕があれば";

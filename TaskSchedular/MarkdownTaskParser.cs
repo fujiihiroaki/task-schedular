@@ -222,14 +222,17 @@ internal static partial class MarkdownTaskParser {
 
     // - [ ] xxx
     // - [x] xxx
-    readonly static Regex taskLine = new(@"^\s*[-*]\s+\[(?<done>[ xX])\]\s+(?<body>.+?)\s*$", RegexOptions.Compiled);
+    private static readonly Regex TaskLine = new(@"^\s*[-*]\s+\[(?<done>[ xX])\]\s+(?<body>.+?)\s*$", RegexOptions.Compiled);
 
     // meta: due/start/lead/pace/p/est/tag
-    readonly static Regex metaToken = new(@"\b(?<key>due|start|lead|pace|p|est|tag)\s*:\s*(?<val>[^\s]+)\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex MetaToken = new(@"\b(?<key>due|start|lead|pace|p|est|tag)\s*:\s*(?<val>[^\s]+)\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    readonly static Regex heading = new(@"^\s{0,3}#{1,6}\s+(?<text>.+?)\s*$", RegexOptions.Compiled);
+    private static readonly Regex PeriodLine = new(@"^\s*period\s*:\s*(?<start>\d{4}-\d{2}-\d{2})\s*\.\.\s*(?<end>\d{4}-\d{2}-\d{2})\s*$",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    readonly static Regex dateInHeading = new(@"\b(?<date>\d{4}-\d{2}-\d{2})\b", RegexOptions.Compiled);
+    private static readonly Regex Heading = new(@"^\s{0,3}#{1,6}\s+(?<text>.+?)\s*$", RegexOptions.Compiled);
+
+    private static readonly Regex DateInHeading = new(@"\b(?<date>\d{4}-\d{2}-\d{2})\b", RegexOptions.Compiled);
 
     /// <summary>
     /// Markdown文字列を解析してタスクアイテムのリストを生成します。
@@ -241,10 +244,22 @@ internal static partial class MarkdownTaskParser {
         var tasks = new List<TaskItem>();
         string? currentSection = null;
         DateTime? currentSectionDate = null;
+        DateTime? currentPeriodEnd = null;
 
         foreach (var line in _ReadLines(markdown))
         {
-            var h = heading.Match(line);
+            var period = PeriodLine.Match(line);
+            if (period.Success)
+            {
+                if (_TryParseDateValue(period.Groups["start"].Value, out _)
+                    && _TryParseDateValue(period.Groups["end"].Value, out var end))
+                {
+                    currentPeriodEnd = end.Date;
+                }
+                continue;
+            }
+
+            var h = Heading.Match(line);
             if (h.Success)
             {
                 currentSection = h.Groups["text"].Value.Trim();
@@ -252,7 +267,7 @@ internal static partial class MarkdownTaskParser {
                 continue;
             }
 
-            var m = taskLine.Match(line);
+            var m = TaskLine.Match(line);
             if (!m.Success) continue;
 
             var isDone = m.Groups["done"].Value is "x" or "X";
@@ -267,6 +282,7 @@ internal static partial class MarkdownTaskParser {
                 IsDone = isDone,
                 Section = currentSection,
                 SectionDate = currentSectionDate,
+                PeriodEnd = currentPeriodEnd,
                 Id = _MakeStableId(title, meta)
             };
 
@@ -313,7 +329,7 @@ internal static partial class MarkdownTaskParser {
     /// </summary>
     /// <param name="s">分割対象の文字列</param>
     /// <returns>行のシーケンス</returns>
-    static IEnumerable<string> _ReadLines(string s)
+    private static IEnumerable<string> _ReadLines(string s)
     {
         using var sr = new StringReader(s);
         while (sr.ReadLine() is {} line)
@@ -327,21 +343,24 @@ internal static partial class MarkdownTaskParser {
     /// </summary>
     /// <param name="headingText">見出しテキスト</param>
     /// <returns>抽出された日付。見つからない場合はnull</returns>
-    static DateTime? _TryParseDateFromHeading(string headingText)
+    private static DateTime? _TryParseDateFromHeading(string headingText)
     {
-        var m = dateInHeading.Match(headingText);
+        var m = DateInHeading.Match(headingText);
         if (!m.Success) return null;
 
-        if (DateTime.TryParseExact(m.Groups["date"].Value,
+        if (_TryParseDateValue(m.Groups["date"].Value, out var d))
+            return d.Date;
+
+        return null;
+    }
+
+    private static bool _TryParseDateValue(string value, out DateTime date)
+    {
+        return DateTime.TryParseExact(value,
             "yyyy-MM-dd",
             CultureInfo.InvariantCulture,
             DateTimeStyles.None,
-            out var d))
-        {
-            return d.Date;
-        }
-
-        return null;
+            out date);
     }
 
     /// <summary>
@@ -349,9 +368,9 @@ internal static partial class MarkdownTaskParser {
     /// </summary>
     /// <param name="body">タスク本文</param>
     /// <returns>タイトルとメタデータのタプル</returns>
-    static (string title, string meta) _SplitTitleAndMeta(string body)
+    private static (string title, string meta) _SplitTitleAndMeta(string body)
     {
-        var tokens = metaToken.Matches(body);
+        var tokens = MetaToken.Matches(body);
         if (tokens.Count == 0) return (body, "");
 
         var earliest = tokens[0].Index;
@@ -370,9 +389,9 @@ internal static partial class MarkdownTaskParser {
     /// </summary>
     /// <param name="item">設定対象のTaskItem</param>
     /// <param name="meta">メタデータ文字列</param>
-    static void _ApplyMeta(TaskItem item, string meta)
+    private static void _ApplyMeta(TaskItem item, string meta)
     {
-        foreach (Match m in metaToken.Matches(meta))
+        foreach (Match m in MetaToken.Matches(meta))
         {
             var key = m.Groups["key"].Value.ToLowerInvariant();
             var val = m.Groups["val"].Value;
@@ -432,7 +451,7 @@ internal static partial class MarkdownTaskParser {
     /// <param name="s">見積もり時間文字列</param>
     /// <param name="ts">変換されたTimeSpan</param>
     /// <returns>変換に成功した場合true</returns>
-    static bool _TryParseEstimate(string s, out TimeSpan ts)
+    private static bool _TryParseEstimate(string s, out TimeSpan ts)
     {
         // est: 30m / 2h / 1d（d=8h換算）
         ts = TimeSpan.Zero;
@@ -459,7 +478,7 @@ internal static partial class MarkdownTaskParser {
     /// <param name="s">リードタイム文字列</param>
     /// <param name="ts">変換されたTimeSpan</param>
     /// <returns>変換に成功した場合true</returns>
-    static bool _TryParseLead(string s, out TimeSpan ts)
+    private static bool _TryParseLead(string s, out TimeSpan ts)
     {
         // lead: 90d / 12w / 3m（m=30d）/ 1y（365d）
         ts = TimeSpan.Zero;
@@ -487,7 +506,7 @@ internal static partial class MarkdownTaskParser {
     /// <param name="title">タスクタイトル</param>
     /// <param name="meta">メタデータ文字列</param>
     /// <returns>8桁の16進数ハッシュ文字列</returns>
-    static string _MakeStableId(string title, string meta)
+    private static string _MakeStableId(string title, string meta)
     {
         var basis = (title + "|" + meta).Trim().ToLowerInvariant();
         basis = _MyRegex1().Replace(basis, " ");

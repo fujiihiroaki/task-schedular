@@ -218,22 +218,21 @@ using System.Threading.Tasks;
 /// FileSystemWatcherを使用してファイルシステムイベントを検出します。
 /// </summary>
 internal sealed class WatchAgent : IDisposable {
+    private readonly string _inputFullPath;
 
-    readonly string _inputFullPath;
+    private readonly string _outPath;
 
-    readonly string _outPath;
+    private readonly TimeSpan _debounce;
 
-    readonly TimeSpan _debounce;
+    private readonly FileSystemWatcher _fsw;
 
-    readonly FileSystemWatcher _fsw;
+    private readonly object _gate = new();
 
-    readonly object _gate = new();
+    private CancellationTokenSource? _debounceCts;
 
-    CancellationTokenSource? _debounceCts;
+    private readonly SemaphoreSlim _runLock = new(1, 1);
 
-    readonly SemaphoreSlim _runLock = new(1, 1);
-
-    volatile bool _started;
+    private volatile bool _started;
 
     /// <summary>
     /// WatchAgentの新しいインスタンスを初期化します。
@@ -279,17 +278,17 @@ internal sealed class WatchAgent : IDisposable {
     /// <summary>
     /// ファイル名変更イベントのハンドラ。
     /// </summary>
-    void OnRename(object sender, RenamedEventArgs e) => _ScheduleRebuild();
+    private void OnRename(object sender, RenamedEventArgs e) => _ScheduleRebuild();
     
     /// <summary>
     /// ファイル変更イベントのハンドラ。
     /// </summary>
-    void OnEvent(object sender, FileSystemEventArgs e) => _ScheduleRebuild();
+    private void OnEvent(object sender, FileSystemEventArgs e) => _ScheduleRebuild();
 
     /// <summary>
     /// タスクの再ビルドをデバウンス付きでスケジュールします。
     /// </summary>
-    void _ScheduleRebuild()
+    private void _ScheduleRebuild()
     {
         lock (_gate)
         {
@@ -313,7 +312,7 @@ internal sealed class WatchAgent : IDisposable {
     /// <summary>
     /// タスクを排他的に実行します。ファイルアクセスエラー時はリトライします。
     /// </summary>
-    async Task RunOnceSerializedAsync()
+    private async Task RunOnceSerializedAsync()
     {
         await _runLock.WaitAsync().ConfigureAwait(false);
         try
@@ -347,7 +346,7 @@ internal sealed class WatchAgent : IDisposable {
     /// <summary>
     /// プロセスの優先度を下げる試みを行います。
     /// </summary>
-    static void _TryLowerProcessPriority()
+    private static void _TryLowerProcessPriority()
     {
         try
         {

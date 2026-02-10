@@ -274,7 +274,7 @@ internal static class MarkdownRenderer {
     /// <param name="title">セクションタイトル</param>
     /// <param name="tasks">出力するタスクリスト</param>
     /// <param name="dedupe">重複を除去する場合true</param>
-    static void _WriteSection(StringBuilder sb, string title, List<TaskItem> tasks, bool dedupe = false)
+    private static void _WriteSection(StringBuilder sb, string title, List<TaskItem> tasks, bool dedupe = false)
     {
         sb.AppendLine($"## {title}");
         sb.AppendLine();
@@ -313,7 +313,7 @@ internal static class MarkdownRenderer {
     /// </summary>
     /// <param name="ts">フォーマット対象のTimeSpan</param>
     /// <returns>フォーマットされた文字列</returns>
-    static string _FormatEst(TimeSpan ts)
+    private static string _FormatEst(TimeSpan ts)
     {
         if (ts.TotalMinutes < 60) return $"{(int) ts.TotalMinutes}m";
         if (ts.TotalHours < 8) return $"{(int) ts.TotalHours}h";
