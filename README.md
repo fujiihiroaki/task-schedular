@@ -43,30 +43,47 @@ dotnet publish -c Release
 
 ### 基本的な使用方法
 
-#### 1. 一回だけ実行（onceモード）
+#### 1. 一回だけ実行（onceモード） 上段：Windows 下段：Linux
 
 ```PowerShell
-TaskSchedular.exe -- once <入力ファイル.md> [--out <出力ファイル.md>]
+.\TaskSchedular.exe once <入力ファイル.md> [--out <出力ファイル.md>]
+```
+```bash
+./TaskSchedular once <入力ファイル.md> [--out <出力ファイル.md>]
 ```
 
-**例:**
+
+**例:** 上段：Windows 下段：Linux
 ```PowerShell
-TaskSchedular.exe -- once plan.md --out prioritized.md
+.\TaskSchedular.exe once plan.md --out prioritized.md
+```
+```bash
+./TaskSchedular once plan.md --out prioritized.md
 ```
 
-#### 2. ファイル監視モード（watchモード）
+#### 2. ファイル監視モード（watchモード） 上段：Windows 下段：Linux
 
 ```PowerShell
-TaskSchedular.exe -- watch <入力ファイル.md> [--out <出力ファイル.md>] [--debounce-ms <ミリ秒>]
+.\TaskSchedular.exe watch <入力ファイル.md> [--out <出力ファイル.md>] [--debounce-ms <ミリ秒>]
+```
+```bash
+./TaskSchedular watch <入力ファイル.md> [--out <出力ファイル.md>] [--debounce-ms <ミリ秒>]
 ```
 
-**例:**
+**例:** 上段：Windows 下段：Linux
 ```PowerShell
 # デフォルト設定（デバウンス1200ms）
-TaskSchedular.exe -- watch plan.md
+.\TaskSchedular.exe watch plan.md
 
 # カスタム設定
-TaskSchedular.exe -- watch plan.md --out tasks.md --debounce-ms 500
+.\TaskSchedular.exe watch plan.md --out tasks.md --debounce-ms 500
+```
+```bash
+# デフォルト設定（デバウンス1200ms）
+./TaskSchedular watch plan.md
+
+# カスタム設定
+./TaskSchedular watch plan.md --out tasks.md --debounce-ms 500
 ```
 
 watchモードでは、入力ファイルの変更を自動検知して出力ファイルを更新し続けます。終了するには `Ctrl+C` を押してください。

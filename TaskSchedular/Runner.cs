@@ -229,7 +229,7 @@ internal static class Runner {
         var md = File.ReadAllText(inputPath, Encoding.UTF8);
         var tasks = MarkdownTaskParser.Parse(md);
 
-        var baseDate = today ?? DateTime.Now.Date;
+        var baseDate = (today ?? DateTime.Now).Date;
         var ranked = TaskRanker.Rank(tasks, baseDate);
 
         // NEW 判定（前回出力に埋めた id と比較）
