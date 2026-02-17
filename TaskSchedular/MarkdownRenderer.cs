@@ -210,12 +210,6 @@ using System.Text;
 
 namespace Jiifureit.TaskSchedular;
 
-#region
-
-
-
-#endregion
-
 /// <summary>
 ///     ランク付けされたタスクをMarkdown形式で出力するレンダラークラス。
 ///     タスクの優先度、スコア、理由などを見やすく整形して出力します。
