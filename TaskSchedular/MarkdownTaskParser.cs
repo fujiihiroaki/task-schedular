@@ -211,12 +211,6 @@ using System.Text.RegularExpressions;
 
 namespace Jiifureit.TaskSchedular;
 
-#region
-
-
-
-#endregion
-
 /// <summary>
 /// Markdownファイルを解析してタスクアイテムを抽出するパーサークラス。
 /// チェックリスト形式のタスクとメタデータ（due, start, lead, pace, p, est, tag）を解析します。
@@ -241,7 +235,7 @@ internal static partial class MarkdownTaskParser
         "slow"
     };
 
-    public const int MAX_PACE_DAYS = 2048;
+    public const int MaxPaceDays = 2048;
 
     private static readonly Regex PeriodLine = new(
         @"^\s*period\s*:\s*(?<start>\d{4}-\d{2}-\d{2})\s*\.\.\s*(?<end>\d{4}-\d{2}-\d{2})\s*$",
@@ -518,9 +512,9 @@ internal static partial class MarkdownTaskParser
             return false;
         }
 
-        if (days is < 1 or > MAX_PACE_DAYS)
+        if (days is < 1 or > MaxPaceDays)
         {
-            error = $"days out of range 1..{MAX_PACE_DAYS}";
+            error = $"days out of range 1..{MaxPaceDays}";
             return false;
         }
 

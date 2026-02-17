@@ -204,12 +204,6 @@
 
 namespace Jiifureit.TaskSchedular;
 
-#region
-
-
-
-#endregion
-
 /// <summary>
 /// タスクに優先度スコアを付与し、ランキングを行うクラス。
 /// 期限、手動優先度、開始日、見積もり時間などを考慮してスコアを計算します。

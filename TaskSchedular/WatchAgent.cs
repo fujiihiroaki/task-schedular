@@ -210,12 +210,6 @@ using System.Diagnostics;
 
 namespace Jiifureit.TaskSchedular;
 
-#region
-
-
-
-#endregion
-
 /// <summary>
 /// 入力ファイルの変更を監視し、デバウンス処理を行いながら自動的にタスクを再生成するエージェントクラス。
 /// FileSystemWatcherを使用してファイルシステムイベントを検出します。
@@ -324,8 +318,8 @@ internal sealed class WatchAgent : IDisposable
         await _runLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            const int MAX_TRY = 6;
-            for (var i = 0; i < MAX_TRY; i++)
+            const int maxTry = 6;
+            for (var i = 0; i < maxTry; i++)
             {
                 try
                 {
