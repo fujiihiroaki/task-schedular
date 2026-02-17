@@ -235,7 +235,7 @@ internal static partial class MarkdownTaskParser
         "slow"
     };
 
-    public const int MAX_PACE_DAYS = 2048;
+    public const int MaxPaceDays = 2048;
 
     private static readonly Regex PeriodLine = new(
         @"^\s*period\s*:\s*(?<start>\d{4}-\d{2}-\d{2})\s*\.\.\s*(?<end>\d{4}-\d{2}-\d{2})\s*$",
