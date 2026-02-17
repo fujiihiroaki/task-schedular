@@ -210,12 +210,6 @@ using System.Globalization;
 
 namespace Jiifureit.TaskSchedular;
 
-#region
-
-
-
-#endregion
-
 /// <summary>
 /// タスクの開始日を自動推論するクラス。
 /// pace、tag、タイトルのキーワードからリードタイムを推定し、開始日を計算します。
