@@ -201,15 +201,18 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
+
+#region
+
+using System.Text;
+
+#endregion
+
 namespace Jiifureit.TaskSchedular;
 
 #region
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+
 
 #endregion
 
@@ -217,8 +220,8 @@ using System.Text;
 ///     ランク付けされたタスクをMarkdown形式で出力するレンダラークラス。
 ///     タスクの優先度、スコア、理由などを見やすく整形して出力します。
 /// </summary>
-internal static class MarkdownRenderer {
-
+internal static class MarkdownRenderer
+{
     /// <summary>
     ///     ランク付けされたタスクをMarkdown形式の文字列に変換します。
     /// </summary>
@@ -235,17 +238,18 @@ internal static class MarkdownRenderer {
         sb.AppendLine($"- Generated: `{DateTime.Now:yyyy-MM-dd HH:mm}`");
         sb.AppendLine();
 
-        var now = ranked.Where(t => EffectiveDate(t) is {} d && d <= today).ToList();
-        var next2 = ranked.Where(t => EffectiveDate(t) is {} d && d > today && d <= today.AddDays(2)).ToList();
-        var week = ranked.Where(t => EffectiveDate(t) is {} d && d > today.AddDays(2) && d <= today.AddDays(7)).ToList();
+        var now = ranked.Where(t => EffectiveDate(t) is { } d && d <= today).ToList();
+        var next2 = ranked.Where(t => EffectiveDate(t) is { } d && d > today && d <= today.AddDays(2)).ToList();
+        var week = ranked.Where(t => EffectiveDate(t) is { } d && d > today.AddDays(2) && d <= today.AddDays(7))
+            .ToList();
         var backlog = ranked.Where(t => EffectiveDate(t) is null || EffectiveDate(t) > today.AddDays(7)).ToList();
 
         _WriteSection(sb, "今すぐ（着手日/期限が今日以前）", now);
         _WriteSection(sb, "次にやる（〜2日）", next2);
         _WriteSection(sb, "今週中（〜7日）", week);
 
-        var quick = ranked.Where(t => t.Estimate is {} e && e <= TimeSpan.FromMinutes(30)).ToList();
-        _WriteSection(sb, "30分以内で終わる系", quick, dedupe : true);
+        var quick = ranked.Where(t => t.Estimate is { } e && e <= TimeSpan.FromMinutes(30)).ToList();
+        _WriteSection(sb, "30分以内で終わる系", quick, dedupe: true);
 
         _WriteSection(sb, "余裕があれば（先/期限なし）", backlog);
 
@@ -293,12 +297,12 @@ internal static class MarkdownRenderer {
         foreach (var t in list)
         {
             var newMark = t.IsNew ? " **NEW**" : "";
-            var due = t.Due is {} d ? $" due:{d:yyyy-MM-dd}" : "";
-            var start = t.Start is {} s ? $" start:{s:yyyy-MM-dd}" : "";
-            var lead = t.Lead is {} l ? $" lead:{(int) l.TotalDays}d" : "";
+            var due = t.Due is { } d ? $" due:{d:yyyy-MM-dd}" : "";
+            var start = t.Start is { } s ? $" start:{s:yyyy-MM-dd}" : "";
+            var lead = t.Lead is { } l ? $" lead:{(int)l.TotalDays}d" : "";
             var pace = !string.IsNullOrWhiteSpace(t.Pace) ? $" pace:{t.Pace}" : "";
-            var p = t.ManualPriority is {} mp ? $" p:{mp}" : "";
-            var est = t.Estimate is {} e ? $" est:{_FormatEst(e)}" : "";
+            var p = t.ManualPriority is { } mp ? $" p:{mp}" : "";
+            var est = t.Estimate is { } e ? $" est:{_FormatEst(e)}" : "";
             var tags = t.Tags.Count > 0 ? $" tag:{string.Join(",", t.Tags)}" : "";
 
             sb.AppendLine($"- [ ] {t.Title}{newMark}{due}{start}{lead}{pace}{p}{est}{tags}  <!-- id:{t.Id} -->");
@@ -315,9 +319,9 @@ internal static class MarkdownRenderer {
     /// <returns>フォーマットされた文字列</returns>
     private static string _FormatEst(TimeSpan ts)
     {
-        if (ts.TotalMinutes < 60) return $"{(int) ts.TotalMinutes}m";
-        if (ts.TotalHours < 8) return $"{(int) ts.TotalHours}h";
+        if (ts.TotalMinutes < 60) return $"{(int)ts.TotalMinutes}m";
+        if (ts.TotalHours < 8) return $"{(int)ts.TotalHours}h";
 
-        return $"{(int) (ts.TotalHours / 8)}d";
+        return $"{(int)(ts.TotalHours / 8)}d";
     }
 }

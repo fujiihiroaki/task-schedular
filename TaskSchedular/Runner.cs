@@ -201,23 +201,26 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
+
+#region
+
+using System.Text;
+
+#endregion
+
 namespace Jiifureit.TaskSchedular;
 
 #region
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+
 
 #endregion
 
 /// <summary>
 ///     タスク処理のメインフロー（読込→解析→ランク付け→出力）を実行するランナークラス。
 /// </summary>
-internal static class Runner {
-
+internal static class Runner
+{
     /// <summary>
     ///     Markdownファイルからタスクを読み込み、ランク付けして出力します。
     /// </summary>
@@ -271,8 +274,8 @@ internal static class Runner {
     /// <param name="today">現在の日付。</param>
     private static void _WriteConsoleSummary(List<TaskItem> ranked, DateTime today)
     {
-        var now = ranked.Where(t => _EffectiveDate(t) is {} d && d <= today).ToList();
-        var next2 = ranked.Where(t => _EffectiveDate(t) is {} d && d > today && d <= today.AddDays(2)).ToList();
+        var now = ranked.Where(t => _EffectiveDate(t) is { } d && d <= today).ToList();
+        var next2 = ranked.Where(t => _EffectiveDate(t) is { } d && d > today && d <= today.AddDays(2)).ToList();
 
         var selected = new List<TaskItem>();
         selected.AddRange(now);

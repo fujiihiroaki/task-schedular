@@ -201,16 +201,19 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
+
+#region
+
+using System.Globalization;
+using System.Text.RegularExpressions;
+
+#endregion
+
 namespace Jiifureit.TaskSchedular;
 
 #region
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
+
 
 #endregion
 
@@ -218,14 +221,17 @@ using System.Text.RegularExpressions;
 /// Markdownファイルを解析してタスクアイテムを抽出するパーサークラス。
 /// チェックリスト形式のタスクとメタデータ（due, start, lead, pace, p, est, tag）を解析します。
 /// </summary>
-internal static partial class MarkdownTaskParser {
-
+internal static partial class MarkdownTaskParser
+{
     // - [ ] xxx
     // - [x] xxx
-    private static readonly Regex TaskLine = new(@"^\s*[-*]\s+\[(?<done>[ xX])\]\s+(?<body>.+?)\s*$", RegexOptions.Compiled);
+    private static readonly Regex TaskLine = new(@"^\s*[-*]\s+\[(?<done>[ xX])\]\s+(?<body>.+?)\s*$",
+        RegexOptions.Compiled);
 
     // meta: due/start/lead/pace/p/est/tag
-    private static readonly Regex MetaToken = new(@"\b(?<key>due|start|lead|pace|p|est|tag)\s*:\s*(?<val>[^\s]+)\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex MetaToken = new(@"\b(?<key>due|start|lead|pace|p|est|tag)\s*:\s*(?<val>[^\s]+)\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
     private static readonly HashSet<string> DefaultPaceNames = new(StringComparer.Ordinal)
     {
         "nonstop",
@@ -234,9 +240,11 @@ internal static partial class MarkdownTaskParser {
         "normal",
         "slow"
     };
-    private const int MaxPaceDays = 2048;
 
-    private static readonly Regex PeriodLine = new(@"^\s*period\s*:\s*(?<start>\d{4}-\d{2}-\d{2})\s*\.\.\s*(?<end>\d{4}-\d{2}-\d{2})\s*$",
+    public const int MAX_PACE_DAYS = 2048;
+
+    private static readonly Regex PeriodLine = new(
+        @"^\s*period\s*:\s*(?<start>\d{4}-\d{2}-\d{2})\s*\.\.\s*(?<end>\d{4}-\d{2}-\d{2})\s*$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex Heading = new(@"^\s{0,3}#{1,6}\s+(?<text>.+?)\s*$", RegexOptions.Compiled);
@@ -265,6 +273,7 @@ internal static partial class MarkdownTaskParser {
                 {
                     currentPeriodEnd = _ToEndOfDay(end);
                 }
+
                 continue;
             }
 
@@ -330,6 +339,7 @@ internal static partial class MarkdownTaskParser {
             if (!string.IsNullOrWhiteSpace(id))
                 set.Add(id);
         }
+
         return set;
     }
 
@@ -341,7 +351,7 @@ internal static partial class MarkdownTaskParser {
     private static IEnumerable<string> _ReadLines(string s)
     {
         using var sr = new StringReader(s);
-        while (sr.ReadLine() is {} line)
+        while (sr.ReadLine() is { } line)
         {
             yield return line;
         }
@@ -419,19 +429,19 @@ internal static partial class MarkdownTaskParser {
             {
                 case "due":
                     if (DateTime.TryParseExact(val,
-                        "yyyy-MM-dd",
-                        CultureInfo.InvariantCulture,
-                        DateTimeStyles.None,
-                        out var d))
+                            "yyyy-MM-dd",
+                            CultureInfo.InvariantCulture,
+                            DateTimeStyles.None,
+                            out var d))
                         item.Due = _ToEndOfDay(d);
                     break;
 
                 case "start":
                     if (DateTime.TryParseExact(val,
-                        "yyyy-MM-dd",
-                        CultureInfo.InvariantCulture,
-                        DateTimeStyles.None,
-                        out var s))
+                            "yyyy-MM-dd",
+                            CultureInfo.InvariantCulture,
+                            DateTimeStyles.None,
+                            out var s))
                         item.Start = s.Date;
                     break;
 
@@ -508,9 +518,9 @@ internal static partial class MarkdownTaskParser {
             return false;
         }
 
-        if (days is < 1 or > MaxPaceDays)
+        if (days is < 1 or > MAX_PACE_DAYS)
         {
-            error = $"days out of range 1..{MaxPaceDays}";
+            error = $"days out of range 1..{MAX_PACE_DAYS}";
             return false;
         }
 
@@ -520,7 +530,8 @@ internal static partial class MarkdownTaskParser {
 
     private static void _WriteInvalidPaceWarning(TaskItem item, string rawValue, string reason)
     {
-        Console.Error.WriteLine($"[pace] invalid value '{rawValue}' (reason: {reason}, id:{item.Id}, title:{item.Title})");
+        Console.Error.WriteLine(
+            $"[pace] invalid value '{rawValue}' (reason: {reason}, id:{item.Id}, title:{item.Title})");
     }
 
     /// <summary>
