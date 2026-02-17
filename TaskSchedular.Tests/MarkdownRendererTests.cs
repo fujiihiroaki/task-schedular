@@ -468,6 +468,33 @@ public class MarkdownRendererTests {
     }
 
     [Fact]
+    public void Render_TaskWithCustomPace_RendersPaceWithDays()
+    {
+        // Arrange
+        var today = new DateTime(2026, 2, 7);
+        var tasks = new List<TaskItem>
+        {
+            new()
+            {
+                RawLine = "test",
+                Title = "タスク",
+                IsDone = false,
+                Id = "1",
+                Pace = "fast=7",
+                Score = 100,
+                Reason = "test"
+            }
+        };
+        var sourcePath = "test.md";
+
+        // Act
+        var result = MarkdownRenderer.Render(tasks, today, sourcePath);
+
+        // Assert
+        Assert.Contains("pace:fast=7", result);
+    }
+
+    [Fact]
     public void Render_IncludesMetadataGuide()
     {
         // Arrange
@@ -482,6 +509,7 @@ public class MarkdownRendererTests {
         Assert.Contains("## メタの書き方（例）", result);
         Assert.Contains("due:", result);
         Assert.Contains("start:", result);
-        Assert.Contains("pace:", result);
+        Assert.Contains("pace:nonstop|rapid|fast|normal|slow", result);
+        Assert.Contains("pace:<name>=<days>", result);
     }
 }

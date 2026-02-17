@@ -206,6 +206,7 @@ namespace Jiifureit.TaskSchedular;
 #region
 
 using System;
+using System.Globalization;
 using System.Linq;
 
 #endregion
@@ -248,16 +249,37 @@ internal static class Inference {
     /// <summary>
     /// ペース文字列からリードタイムに変換します。
     /// </summary>
-    /// <param name="pace">ペース文字列（slow/normal/fast）</param>
+    /// <param name="pace">ペース文字列（name または name=days）</param>
     /// <returns>対応するリードタイム。該当しない場合はnull</returns>
     private static TimeSpan? _PaceToLead(string? pace)
-        => pace switch
+    {
+        if (string.IsNullOrWhiteSpace(pace))
+            return null;
+
+        var normalized = pace.Trim().ToLowerInvariant();
+        var eqIdx = normalized.IndexOf('=');
+        if (eqIdx >= 0)
         {
-            "slow" => TimeSpan.FromDays(120),
-            "normal" => TimeSpan.FromDays(90),
-            "fast" => TimeSpan.FromDays(30),
+            var daysPart = normalized[(eqIdx + 1)..];
+            if (int.TryParse(daysPart, NumberStyles.Integer, CultureInfo.InvariantCulture, out var days)
+                && days is >= 1 and <= 2048)
+            {
+                return TimeSpan.FromDays(days);
+            }
+
+            return null;
+        }
+
+        return normalized switch
+        {
+            "nonstop" => TimeSpan.FromDays(1),
+            "rapid" => TimeSpan.FromDays(7),
+            "fast" => TimeSpan.FromDays(14),
+            "normal" => TimeSpan.FromDays(30),
+            "slow" => TimeSpan.FromDays(90),
             _ => null
         };
+    }
 
     /// <summary>
     /// タグやタイトルのキーワードからリードタイムを推定します。

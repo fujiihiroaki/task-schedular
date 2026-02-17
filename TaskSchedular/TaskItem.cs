@@ -239,7 +239,7 @@ internal sealed class TaskItem {
 
     public TimeSpan? Lead { get; set; }// lead:90d / 12w / 3m / 1y
 
-    public string? Pace { get; set; }// pace:slow|normal|fast
+    public string? Pace { get; set; }// pace:<name> or pace:<name>=<days>
 
     public int? ManualPriority { get; set; }// p:1
 

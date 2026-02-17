@@ -306,6 +306,203 @@ public class MarkdownTaskParserTests {
     }
 
     [Fact]
+    public void Parse_TaskWithUppercasePace_NormalizesToLowercase()
+    {
+        // Arrange
+        var markdown = "- [ ] タスク pace:FAST";
+
+        // Act
+        var result = MarkdownTaskParser.Parse(markdown);
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal("fast", result[0].Pace);
+    }
+
+    [Fact]
+    public void Parse_TaskWithCustomPaceDays_NormalizesAndKeepsDays()
+    {
+        // Arrange
+        var markdown = "- [ ] タスク pace:FAST=007";
+
+        // Act
+        var result = MarkdownTaskParser.Parse(markdown);
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal("fast=7", result[0].Pace);
+    }
+
+    [Fact]
+    public void Parse_TaskWithCustomUnknownPaceName_AcceptsCustomDays()
+    {
+        // Arrange
+        var markdown = "- [ ] タスク due:2026-06-01 pace:unknown=45";
+
+        // Act
+        var result = MarkdownTaskParser.Parse(markdown);
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal("unknown=45", result[0].Pace);
+        Assert.Equal(TimeSpan.FromDays(45), result[0].Lead);
+    }
+
+    [Fact]
+    public void Parse_TaskWithInvalidPaceName_IgnoresAndWarns()
+    {
+        // Arrange
+        var markdown = "- [ ] タスク due:2026-06-01 pace:unknown";
+        var originalError = Console.Error;
+        using var errorWriter = new StringWriter();
+        Console.SetError(errorWriter);
+
+        try
+        {
+            // Act
+            var result = MarkdownTaskParser.Parse(markdown);
+
+            // Assert
+            Assert.Single(result);
+            Assert.Null(result[0].Pace);
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
+
+        var error = errorWriter.ToString();
+        Assert.Contains("[pace] invalid value 'unknown'", error);
+        Assert.Contains("reason: unknown pace name", error);
+        Assert.Contains("id:", error);
+        Assert.Contains("title:タスク", error);
+    }
+
+    [Fact]
+    public void Parse_TaskWithInvalidPaceCustomName_IgnoresAndWarns()
+    {
+        // Arrange
+        var markdown = "- [ ] タスク pace:bad!name=30";
+        var originalError = Console.Error;
+        using var errorWriter = new StringWriter();
+        Console.SetError(errorWriter);
+
+        try
+        {
+            // Act
+            var result = MarkdownTaskParser.Parse(markdown);
+
+            // Assert
+            Assert.Single(result);
+            Assert.Null(result[0].Pace);
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
+
+        var error = errorWriter.ToString();
+        Assert.Contains("[pace] invalid value 'bad!name=30'", error);
+        Assert.Contains("reason: invalid pace name", error);
+    }
+
+    [Fact]
+    public void Parse_TaskWithOutOfRangePaceDays_IgnoresAndWarns()
+    {
+        // Arrange
+        var markdown = "- [ ] タスク pace:fast=0";
+        var originalError = Console.Error;
+        using var errorWriter = new StringWriter();
+        Console.SetError(errorWriter);
+
+        try
+        {
+            // Act
+            var result = MarkdownTaskParser.Parse(markdown);
+
+            // Assert
+            Assert.Single(result);
+            Assert.Null(result[0].Pace);
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
+
+        var error = errorWriter.ToString();
+        Assert.Contains("[pace] invalid value 'fast=0'", error);
+        Assert.Contains("reason: days out of range 1..2048", error);
+    }
+
+    [Fact]
+    public void Parse_TaskWithDuplicatePace_UsesLastValidValue()
+    {
+        // Arrange
+        var markdown = "- [ ] タスク pace:slow pace:fast";
+
+        // Act
+        var result = MarkdownTaskParser.Parse(markdown);
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal("fast", result[0].Pace);
+    }
+
+    [Fact]
+    public void Parse_TaskWithInvalidPaceAfterValid_KeepsPreviousValidValue()
+    {
+        // Arrange
+        var markdown = "- [ ] タスク pace:fast pace:invalid";
+        var originalError = Console.Error;
+        using var errorWriter = new StringWriter();
+        Console.SetError(errorWriter);
+
+        try
+        {
+            // Act
+            var result = MarkdownTaskParser.Parse(markdown);
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal("fast", result[0].Pace);
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
+
+        var error = errorWriter.ToString();
+        Assert.Contains("[pace] invalid value 'invalid'", error);
+    }
+
+    [Fact]
+    public void Parse_TaskWithInvalidPaceBeforeValid_UsesLaterValidValue()
+    {
+        // Arrange
+        var markdown = "- [ ] タスク pace:invalid pace:normal";
+        var originalError = Console.Error;
+        using var errorWriter = new StringWriter();
+        Console.SetError(errorWriter);
+
+        try
+        {
+            // Act
+            var result = MarkdownTaskParser.Parse(markdown);
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal("normal", result[0].Pace);
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
+
+        var error = errorWriter.ToString();
+        Assert.Contains("[pace] invalid value 'invalid'", error);
+    }
+
+    [Fact]
     public void Parse_HeadingWithDate_SetsAsSection()
     {
         // Arrange

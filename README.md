@@ -111,7 +111,7 @@ watchモードでは、入力ファイルの変更を自動検知して出力フ
 | `due:` | `YYYY-MM-DD` | 期限日 | `due:2026-03-15` |
 | `start:` | `YYYY-MM-DD` | 着手日（明示的に指定したい場合） | `start:2026-02-10` |
 | `lead:` | `数値+単位` | リードタイム（d/w/m/y） | `lead:90d`, `lead:3m` |
-| `pace:` | `slow\|normal\|fast` | ペース（leadを簡易指定） | `pace:normal` |
+| `pace:` | `nonstop\|rapid\|fast\|normal\|slow` または `<name>=<days>` | ペース（leadを簡易指定） | `pace:normal`, `pace:custom=45` |
 | `p:` | `数値` | 手動優先度（1が最高） | `p:1` |
 | `est:` | `数値+単位` | 見積もり時間（m/h/d） | `est:30m`, `est:2h` |
 | `tag:` | `文字列` | タグ（複数指定可） | `tag:urgent`, `tag:exam` |
@@ -129,9 +129,12 @@ period: 2026-01-01 .. 2026-03-31
 `period:` が定義されている場合、セクション名が「今期の」で始まるタスクは期末日（上記なら `2026-03-31`）を `due` として自動設定します。`due:` が明示されている場合は上書きしません。
 
 **ペースの自動変換:**
-- `pace:slow` → 120日前から着手
-- `pace:normal` → 90日前から着手
-- `pace:fast` → 30日前から着手
+- `pace:nonstop` → 1日前から着手
+- `pace:rapid` → 7日前から着手
+- `pace:fast` → 14日前から着手
+- `pace:normal` → 30日前から着手
+- `pace:slow` → 90日前から着手
+- `pace:<name>=<days>` → 任意日数（`1`〜`2048` の整数）
 
 **タグによる自動推論:**
 タグやタイトルのキーワードから着手日を自動推定します：
@@ -183,7 +186,7 @@ _（なし）_
 ## メタの書き方（例）
 - `due:2026-06-15` 期限
 - `start:2026-02-10` 着手日（書けるなら最優先で尊重）
-- `pace:slow|normal|fast`（leadが難しい人向け）
+- `pace:nonstop|rapid|fast|normal|slow` または `pace:<name>=<days>`（1〜2048日, leadが難しい人向け）
 - `tag:exam`（試験/資格は自動で早めに着手日を推定）
 - `lead:90d`（書ける人だけ。d/w/m/y）
 - `p:1`（手動優先） / `est:30m`（工数）

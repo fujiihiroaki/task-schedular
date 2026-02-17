@@ -252,7 +252,7 @@ public class InferenceTests {
     }
 
     [Fact]
-    public void ApplyAutoStart_PaceSlow_Sets120DaysLead()
+    public void ApplyAutoStart_PaceSlow_Sets90DaysLead()
     {
         // Arrange
         var due = new DateTime(2026, 6, 1);
@@ -270,12 +270,12 @@ public class InferenceTests {
 
         // Assert
         Assert.NotNull(task.Start);
-        Assert.Equal(due.AddDays(-120), task.Start);
-        Assert.Equal(TimeSpan.FromDays(120), task.Lead);
+        Assert.Equal(due.AddDays(-90), task.Start);
+        Assert.Equal(TimeSpan.FromDays(90), task.Lead);
     }
 
     [Fact]
-    public void ApplyAutoStart_PaceNormal_Sets90DaysLead()
+    public void ApplyAutoStart_PaceNormal_Sets30DaysLead()
     {
         // Arrange
         var due = new DateTime(2026, 6, 1);
@@ -293,12 +293,12 @@ public class InferenceTests {
 
         // Assert
         Assert.NotNull(task.Start);
-        Assert.Equal(due.AddDays(-90), task.Start);
-        Assert.Equal(TimeSpan.FromDays(90), task.Lead);
+        Assert.Equal(due.AddDays(-30), task.Start);
+        Assert.Equal(TimeSpan.FromDays(30), task.Lead);
     }
 
     [Fact]
-    public void ApplyAutoStart_PaceFast_Sets30DaysLead()
+    public void ApplyAutoStart_PaceFast_Sets14DaysLead()
     {
         // Arrange
         var due = new DateTime(2026, 6, 1);
@@ -316,8 +316,100 @@ public class InferenceTests {
 
         // Assert
         Assert.NotNull(task.Start);
-        Assert.Equal(due.AddDays(-30), task.Start);
-        Assert.Equal(TimeSpan.FromDays(30), task.Lead);
+        Assert.Equal(due.AddDays(-14), task.Start);
+        Assert.Equal(TimeSpan.FromDays(14), task.Lead);
+    }
+
+    [Fact]
+    public void ApplyAutoStart_PaceRapid_Sets7DaysLead()
+    {
+        // Arrange
+        var due = new DateTime(2026, 6, 1);
+        var task = new TaskItem
+        {
+            RawLine = "test",
+            Title = "タスク",
+            Id = "1",
+            Due = due,
+            Pace = "rapid"
+        };
+
+        // Act
+        Inference.ApplyAutoStart(task);
+
+        // Assert
+        Assert.NotNull(task.Start);
+        Assert.Equal(due.AddDays(-7), task.Start);
+        Assert.Equal(TimeSpan.FromDays(7), task.Lead);
+    }
+
+    [Fact]
+    public void ApplyAutoStart_PaceNonstop_Sets1DayLead()
+    {
+        // Arrange
+        var due = new DateTime(2026, 6, 1);
+        var task = new TaskItem
+        {
+            RawLine = "test",
+            Title = "タスク",
+            Id = "1",
+            Due = due,
+            Pace = "nonstop"
+        };
+
+        // Act
+        Inference.ApplyAutoStart(task);
+
+        // Assert
+        Assert.NotNull(task.Start);
+        Assert.Equal(due.AddDays(-1), task.Start);
+        Assert.Equal(TimeSpan.FromDays(1), task.Lead);
+    }
+
+    [Fact]
+    public void ApplyAutoStart_PaceCustomDays_SetsCustomLead()
+    {
+        // Arrange
+        var due = new DateTime(2026, 6, 1);
+        var task = new TaskItem
+        {
+            RawLine = "test",
+            Title = "タスク",
+            Id = "1",
+            Due = due,
+            Pace = "fast=60"
+        };
+
+        // Act
+        Inference.ApplyAutoStart(task);
+
+        // Assert
+        Assert.NotNull(task.Start);
+        Assert.Equal(due.AddDays(-60), task.Start);
+        Assert.Equal(TimeSpan.FromDays(60), task.Lead);
+    }
+
+    [Fact]
+    public void ApplyAutoStart_PaceCustomUnknownName_SetsCustomLead()
+    {
+        // Arrange
+        var due = new DateTime(2026, 6, 1);
+        var task = new TaskItem
+        {
+            RawLine = "test",
+            Title = "タスク",
+            Id = "1",
+            Due = due,
+            Pace = "unknown=45"
+        };
+
+        // Act
+        Inference.ApplyAutoStart(task);
+
+        // Assert
+        Assert.NotNull(task.Start);
+        Assert.Equal(due.AddDays(-45), task.Start);
+        Assert.Equal(TimeSpan.FromDays(45), task.Lead);
     }
 
     [Fact]
@@ -506,6 +598,30 @@ public class InferenceTests {
             Due = due,
             Lead = TimeSpan.FromDays(60),
             Pace = "fast"
+        };
+
+        // Act
+        Inference.ApplyAutoStart(task);
+
+        // Assert
+        Assert.NotNull(task.Start);
+        Assert.Equal(due.AddDays(-14), task.Start);
+        Assert.Equal(TimeSpan.FromDays(14), task.Lead);
+    }
+
+    [Fact]
+    public void ApplyAutoStart_InvalidPaceWithExplicitLead_UsesExplicitLead()
+    {
+        // Arrange
+        var due = new DateTime(2026, 6, 1);
+        var task = new TaskItem
+        {
+            RawLine = "test",
+            Title = "タスク",
+            Id = "1",
+            Due = due,
+            Lead = TimeSpan.FromDays(30),
+            Pace = "fast=0"
         };
 
         // Act

@@ -253,7 +253,7 @@ internal static class MarkdownRenderer {
         sb.AppendLine("## メタの書き方（例）");
         sb.AppendLine("- `due:2026-06-15` 期限");
         sb.AppendLine("- `start:2026-02-10` 着手日（書けるなら最優先で尊重）");
-        sb.AppendLine("- `pace:slow|normal|fast`（leadが難しい人向け）");
+        sb.AppendLine("- `pace:nonstop|rapid|fast|normal|slow` / `pace:<name>=<days>`（1〜2048日, leadが難しい人向け）");
         sb.AppendLine("- `tag:exam`（試験/資格は自動で早めに着手日を推定）");
         sb.AppendLine("- `lead:90d`（書ける人だけ。d/w/m/y）");
         sb.AppendLine("- `p:1`（手動優先） / `est:30m`（工数）");
