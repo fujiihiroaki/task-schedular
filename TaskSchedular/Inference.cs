@@ -223,7 +223,7 @@ internal static class Inference {
     public static void ApplyAutoStart(TaskItem t)
     {
         if (t.Due is null && t.PeriodEnd is not null && _IsCurrentPeriodSection(t.Section))
-            t.Due = t.PeriodEnd.Value.Date;
+            t.Due = t.PeriodEnd.Value;
 
         // start 明示は最優先
         if (t.Start is not null) return;

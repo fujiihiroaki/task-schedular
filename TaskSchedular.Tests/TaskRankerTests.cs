@@ -417,4 +417,46 @@ public class TaskRankerTests {
         Assert.True(result[0].Score >= result[1].Score);
         Assert.True(result[1].Score > result[2].Score);
     }
+
+    [Fact]
+    public void Rank_DueDate_EndOfDay_TreatsAsTodayNotOverdue()
+    {
+        // Arrange
+        var today = new DateTime(2026, 2, 7, 10, 0, 0); // 午前10時
+        var dueEndOfDay = new DateTime(2026, 2, 7, 23, 59, 59, 999); // 同日の23:59:59.999
+        var dueMidnight = new DateTime(2026, 2, 7, 0, 0, 0); // 同日の00:00:00
+        
+        var tasks = new List<TaskItem>
+        {
+            new() {RawLine = "test", Title = "締切日が23:59:59", IsDone = false, Id = "1", Due = dueEndOfDay},
+            new() {RawLine = "test", Title = "締切日が00:00:00", IsDone = false, Id = "2", Due = dueMidnight}
+        };
+
+        // Act
+        var result = TaskRanker.Rank(tasks, today);
+
+        // Assert
+        // この問題の修正前：
+        // - 00:00:00の場合、(due - today).TotalDaysは負の値になり期限超過扱い (score: 120)
+        // - 23:59:59の場合、(due - today).TotalDaysは正の値で今日期限扱い (score: 90)
+        // 
+        // 修正後：
+        // - パーサーで23:59:59に設定されるので、「今日」の締切として正しく扱われる
+        var task1 = result.FirstOrDefault(t => t.Title == "締切日が23:59:59");
+        var task2 = result.FirstOrDefault(t => t.Title == "締切日が00:00:00");
+        
+        Assert.NotNull(task1);
+        Assert.NotNull(task2);
+        
+        // 23:59:59は「今日期限」として扱われる (days <= 1 → score +90)
+        // 00:00:00は「期限超過」として扱われる (days <= 0 → score +120)
+        // したがって、00:00:00の方がスコアが高くなってしまう（これが問題）
+        // 修正により、パーサーで全ての締切が23:59:59になるため、この問題は解決される
+        
+        // ここでは23:59:59が正しく「今日期限」として扱われることを確認
+        Assert.Contains("due:2026-02-07(+90)", task1.Reason);
+        
+        // 00:00:00は「期限超過」として扱われる（誤り）
+        Assert.Contains("due:2026-02-07(+120)", task2.Reason);
+    }
 }

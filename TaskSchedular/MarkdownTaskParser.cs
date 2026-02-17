@@ -254,7 +254,7 @@ internal static partial class MarkdownTaskParser {
                 if (_TryParseDateValue(period.Groups["start"].Value, out _)
                     && _TryParseDateValue(period.Groups["end"].Value, out var end))
                 {
-                    currentPeriodEnd = end.Date;
+                    currentPeriodEnd = _ToEndOfDay(end);
                 }
                 continue;
             }
@@ -349,7 +349,7 @@ internal static partial class MarkdownTaskParser {
         if (!m.Success) return null;
 
         if (_TryParseDateValue(m.Groups["date"].Value, out var d))
-            return d.Date;
+            return _ToEndOfDay(d);
 
         return null;
     }
@@ -361,6 +361,16 @@ internal static partial class MarkdownTaskParser {
             CultureInfo.InvariantCulture,
             DateTimeStyles.None,
             out date);
+    }
+
+    /// <summary>
+    /// 日付を当日の23:59:59.999に変換します（締切日処理用）。
+    /// </summary>
+    /// <param name="date">変換元の日付</param>
+    /// <returns>23:59:59.999に設定された日付</returns>
+    private static DateTime _ToEndOfDay(DateTime date)
+    {
+        return date.Date.AddDays(1).AddMilliseconds(-1);
     }
 
     /// <summary>
@@ -404,7 +414,7 @@ internal static partial class MarkdownTaskParser {
                         CultureInfo.InvariantCulture,
                         DateTimeStyles.None,
                         out var d))
-                        item.Due = d.Date;
+                        item.Due = _ToEndOfDay(d);
                     break;
 
                 case "start":

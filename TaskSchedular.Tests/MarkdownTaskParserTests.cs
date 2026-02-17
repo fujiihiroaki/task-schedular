@@ -269,7 +269,7 @@ public class MarkdownTaskParserTests {
         Assert.Single(result);
         Assert.Equal("レポート提出", result[0].Title);
         Assert.NotNull(result[0].Due);
-        Assert.Equal(new DateTime(2026, 3, 15), result[0].Due);
+        Assert.Equal(new DateTime(2026, 3, 15, 23, 59, 59, 999), result[0].Due);
     }
 
     [Fact]
@@ -285,7 +285,7 @@ public class MarkdownTaskParserTests {
         Assert.Single(result);
         var task = result[0];
         Assert.Equal("タスク", task.Title);
-        Assert.Equal(new DateTime(2026, 3, 15), task.Due);
+        Assert.Equal(new DateTime(2026, 3, 15, 23, 59, 59, 999), task.Due);
         Assert.Equal(1, task.ManualPriority);
         Assert.Equal(TimeSpan.FromHours(2), task.Estimate);
         Assert.Contains("urgent", task.Tags);
@@ -319,7 +319,7 @@ public class MarkdownTaskParserTests {
         // Assert
         Assert.Single(result);
         Assert.Equal("2026-02-20", result[0].Section);
-        Assert.Equal(new DateTime(2026, 2, 20), result[0].SectionDate);
+        Assert.Equal(new DateTime(2026, 2, 20, 23, 59, 59, 999), result[0].SectionDate);
     }
 
     [Fact]
@@ -335,7 +335,7 @@ public class MarkdownTaskParserTests {
 
         // Assert
         Assert.Single(result);
-        Assert.Equal(new DateTime(2026, 3, 10), result[0].Due);
+        Assert.Equal(new DateTime(2026, 3, 10, 23, 59, 59, 999), result[0].Due);
     }
 
     [Fact]
@@ -351,7 +351,7 @@ public class MarkdownTaskParserTests {
 
         // Assert
         Assert.Single(result);
-        Assert.Equal(new DateTime(2026, 3, 31), result[0].PeriodEnd);
+        Assert.Equal(new DateTime(2026, 3, 31, 23, 59, 59, 999), result[0].PeriodEnd);
     }
 
     [Fact]
@@ -382,7 +382,7 @@ period: 2026-04-01 .. 2026-06-30
 
         // Assert
         Assert.Single(result);
-        Assert.Equal(new DateTime(2026, 6, 30), result[0].PeriodEnd);
+        Assert.Equal(new DateTime(2026, 6, 30, 23, 59, 59, 999), result[0].PeriodEnd);
     }
 
     [Fact]
@@ -455,5 +455,69 @@ period: 2026-04-01 .. 2026-06-30
         Assert.Contains("urgent", result[0].Tags);
         Assert.Contains("work", result[0].Tags);
         Assert.Contains("high-priority", result[0].Tags);
+    }
+
+    [Fact]
+    public void Parse_DueDate_SetsToEndOfDay()
+    {
+        // Arrange
+        var markdown = "- [ ] タスク due:2026-03-15";
+
+        // Act
+        var result = MarkdownTaskParser.Parse(markdown);
+
+        // Assert
+        Assert.Single(result);
+        var task = result[0];
+        Assert.NotNull(task.Due);
+        // 締切日は23:59:59.999に設定されるべき
+        Assert.Equal(23, task.Due.Value.Hour);
+        Assert.Equal(59, task.Due.Value.Minute);
+        Assert.Equal(59, task.Due.Value.Second);
+        Assert.Equal(999, task.Due.Value.Millisecond);
+    }
+
+    [Fact]
+    public void Parse_SectionDate_SetsToEndOfDay()
+    {
+        // Arrange
+        var markdown = @"## 2026-03-10
+
+- [ ] タスク1";
+
+        // Act
+        var result = MarkdownTaskParser.Parse(markdown);
+
+        // Assert
+        Assert.Single(result);
+        var task = result[0];
+        Assert.NotNull(task.SectionDate);
+        // セクション日付は23:59:59.999に設定されるべき
+        Assert.Equal(23, task.SectionDate.Value.Hour);
+        Assert.Equal(59, task.SectionDate.Value.Minute);
+        Assert.Equal(59, task.SectionDate.Value.Second);
+        Assert.Equal(999, task.SectionDate.Value.Millisecond);
+    }
+
+    [Fact]
+    public void Parse_PeriodEnd_SetsToEndOfDay()
+    {
+        // Arrange
+        var markdown = @"period: 2026-01-01 .. 2026-03-31
+
+- [ ] タスク1";
+
+        // Act
+        var result = MarkdownTaskParser.Parse(markdown);
+
+        // Assert
+        Assert.Single(result);
+        var task = result[0];
+        Assert.NotNull(task.PeriodEnd);
+        // 期間終了日は23:59:59.999に設定されるべき
+        Assert.Equal(23, task.PeriodEnd.Value.Hour);
+        Assert.Equal(59, task.PeriodEnd.Value.Minute);
+        Assert.Equal(59, task.PeriodEnd.Value.Second);
+        Assert.Equal(999, task.PeriodEnd.Value.Millisecond);
     }
 }
