@@ -226,6 +226,15 @@ internal static partial class MarkdownTaskParser {
 
     // meta: due/start/lead/pace/p/est/tag
     private static readonly Regex MetaToken = new(@"\b(?<key>due|start|lead|pace|p|est|tag)\s*:\s*(?<val>[^\s]+)\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly HashSet<string> DefaultPaceNames = new(StringComparer.Ordinal)
+    {
+        "nonstop",
+        "rapid",
+        "fast",
+        "normal",
+        "slow"
+    };
+    private const int MaxPaceDays = 2048;
 
     private static readonly Regex PeriodLine = new(@"^\s*period\s*:\s*(?<start>\d{4}-\d{2}-\d{2})\s*\.\.\s*(?<end>\d{4}-\d{2}-\d{2})\s*$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -432,7 +441,10 @@ internal static partial class MarkdownTaskParser {
                     break;
 
                 case "pace":
-                    item.Pace = val.Trim().ToLowerInvariant();// slow|normal|fast
+                    if (_TryNormalizePace(val, out var normalizedPace, out var paceError))
+                        item.Pace = normalizedPace;
+                    else
+                        _WriteInvalidPaceWarning(item, val, paceError);
                     break;
 
                 case "p":
@@ -453,6 +465,62 @@ internal static partial class MarkdownTaskParser {
 
         // leadが明示されていて start が空なら、ここではまだ確定しない
         // (Inference で due が決まったあとに start を作るため)
+    }
+
+    private static bool _TryNormalizePace(string raw, out string normalized, out string error)
+    {
+        normalized = "";
+        error = "";
+
+        var value = raw.Trim();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            error = "empty pace value";
+            return false;
+        }
+
+        var eqIdx = value.IndexOf('=');
+        if (eqIdx < 0)
+        {
+            var name = value.ToLowerInvariant();
+            if (!DefaultPaceNames.Contains(name))
+            {
+                error = "unknown pace name";
+                return false;
+            }
+
+            normalized = name;
+            return true;
+        }
+
+        var namePart = value[..eqIdx].Trim().ToLowerInvariant();
+        var daysPart = value[(eqIdx + 1)..].Trim();
+
+        if (!_MyRegex3().IsMatch(namePart))
+        {
+            error = "invalid pace name";
+            return false;
+        }
+
+        if (!int.TryParse(daysPart, NumberStyles.Integer, CultureInfo.InvariantCulture, out var days))
+        {
+            error = "days must be an integer";
+            return false;
+        }
+
+        if (days is < 1 or > MaxPaceDays)
+        {
+            error = $"days out of range 1..{MaxPaceDays}";
+            return false;
+        }
+
+        normalized = $"{namePart}={days.ToString(CultureInfo.InvariantCulture)}";
+        return true;
+    }
+
+    private static void _WriteInvalidPaceWarning(TaskItem item, string rawValue, string reason)
+    {
+        Console.Error.WriteLine($"[pace] invalid value '{rawValue}' (reason: {reason}, id:{item.Id}, title:{item.Title})");
     }
 
     /// <summary>
@@ -532,4 +600,7 @@ internal static partial class MarkdownTaskParser {
 
     [GeneratedRegex(@"^(?<n>\d+)(?<u>d|w|m|y)$")]
     private static partial Regex _MyRegex2();
+
+    [GeneratedRegex(@"^[a-z][a-z0-9_-]*$")]
+    private static partial Regex _MyRegex3();
 }
