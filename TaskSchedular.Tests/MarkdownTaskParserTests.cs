@@ -435,6 +435,34 @@ public class MarkdownTaskParserTests {
     }
 
     [Fact]
+    public void Parse_TaskWithTooLargePaceDays_IgnoresAndWarns()
+    {
+        // Arrange
+        var markdown = "- [ ] タスク pace:x=2049";
+        var originalError = Console.Error;
+        using var errorWriter = new StringWriter();
+        Console.SetError(errorWriter);
+
+        try
+        {
+            // Act
+            var result = MarkdownTaskParser.Parse(markdown);
+
+            // Assert
+            Assert.Single(result);
+            Assert.Null(result[0].Pace);
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
+
+        var error = errorWriter.ToString();
+        Assert.Contains("[pace] invalid value 'x=2049'", error);
+        Assert.Contains("reason: days out of range 1..2048", error);
+    }
+
+    [Fact]
     public void Parse_TaskWithDuplicatePace_UsesLastValidValue()
     {
         // Arrange
