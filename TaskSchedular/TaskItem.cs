@@ -204,12 +204,6 @@
 
 namespace Jiifureit.TaskSchedular;
 
-#region
-
-
-
-#endregion
-
 // ---------------- Models ----------------
 /// <summary>
 /// Markdownファイルから解析されたタスクアイテムを表すモデルクラス。

@@ -318,8 +318,8 @@ internal sealed class WatchAgent : IDisposable
         await _runLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            const int MAX_TRY = 6;
-            for (var i = 0; i < MAX_TRY; i++)
+            const int maxTry = 6;
+            for (var i = 0; i < maxTry; i++)
             {
                 try
                 {

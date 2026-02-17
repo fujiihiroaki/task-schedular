@@ -261,7 +261,7 @@ internal static class Inference
         {
             var daysPart = normalized[(eqIdx + 1)..];
             if (int.TryParse(daysPart, NumberStyles.Integer, CultureInfo.InvariantCulture, out var days)
-                && days is >= 1 and <= MarkdownTaskParser.MAX_PACE_DAYS)
+                && days is >= 1 and <= MarkdownTaskParser.MaxPaceDays)
             {
                 return TimeSpan.FromDays(days);
             }

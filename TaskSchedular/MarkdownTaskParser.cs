@@ -512,9 +512,9 @@ internal static partial class MarkdownTaskParser
             return false;
         }
 
-        if (days is < 1 or > MAX_PACE_DAYS)
+        if (days is < 1 or > MaxPaceDays)
         {
-            error = $"days out of range 1..{MAX_PACE_DAYS}";
+            error = $"days out of range 1..{MaxPaceDays}";
             return false;
         }
 

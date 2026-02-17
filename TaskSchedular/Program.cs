@@ -204,12 +204,6 @@
 
 namespace Jiifureit.TaskSchedular;
 
-#region
-
-
-
-#endregion
-
 /// <summary>
 /// アプリケーションのエントリーポイント。コマンドライン引数を解析し、once/watchコマンドを実行します。
 /// </summary>
