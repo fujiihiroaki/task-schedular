@@ -201,23 +201,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-namespace Jiifureit.TaskSchedular;
 
 #region
 
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
 #endregion
+
+namespace Jiifureit.TaskSchedular;
 
 /// <summary>
 /// 入力ファイルの変更を監視し、デバウンス処理を行いながら自動的にタスクを再生成するエージェントクラス。
 /// FileSystemWatcherを使用してファイルシステムイベントを検出します。
 /// </summary>
-internal sealed class WatchAgent : IDisposable {
+internal sealed class WatchAgent : IDisposable
+{
     private readonly string _inputFullPath;
 
     private readonly string _outPath;
@@ -279,7 +277,7 @@ internal sealed class WatchAgent : IDisposable {
     /// ファイル名変更イベントのハンドラ。
     /// </summary>
     private void OnRename(object sender, RenamedEventArgs e) => _ScheduleRebuild();
-    
+
     /// <summary>
     /// ファイル変更イベントのハンドラ。
     /// </summary>
@@ -297,15 +295,18 @@ internal sealed class WatchAgent : IDisposable {
             _debounceCts = new CancellationTokenSource();
             var token = _debounceCts.Token;
 
-            _ = Task.Run(async () => {
-                try
+            _ = Task.Run(async () =>
                 {
-                    await Task.Delay(_debounce, token).ConfigureAwait(false);
-                    await RunOnceSerializedAsync().ConfigureAwait(false);
-                }
-                catch (OperationCanceledException) {}
-            },
-            token);
+                    try
+                    {
+                        await Task.Delay(_debounce, token).ConfigureAwait(false);
+                        await RunOnceSerializedAsync().ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+                },
+                token);
         }
     }
 
@@ -331,8 +332,14 @@ internal sealed class WatchAgent : IDisposable {
                     Runner.Run(_inputFullPath, _outPath);
                     return;
                 }
-                catch (IOException) { await Task.Delay(120).ConfigureAwait(false); }
-                catch (UnauthorizedAccessException) { await Task.Delay(120).ConfigureAwait(false); }
+                catch (IOException)
+                {
+                    await Task.Delay(120).ConfigureAwait(false);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    await Task.Delay(120).ConfigureAwait(false);
+                }
             }
 
             await Console.Error.WriteLineAsync($"[{DateTime.Now:HH:mm:ss}] Failed to read file after retries.");
@@ -370,9 +377,9 @@ internal sealed class WatchAgent : IDisposable {
             _debounceCts?.Dispose();
             _debounceCts = null;
         }
+
         _fsw.EnableRaisingEvents = false;
         _fsw.Dispose();
         _runLock.Dispose();
     }
-
 }

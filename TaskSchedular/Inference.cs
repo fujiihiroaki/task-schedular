@@ -201,22 +201,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-namespace Jiifureit.TaskSchedular;
 
 #region
 
-using System;
 using System.Globalization;
-using System.Linq;
 
 #endregion
+
+namespace Jiifureit.TaskSchedular;
 
 /// <summary>
 /// タスクの開始日を自動推論するクラス。
 /// pace、tag、タイトルのキーワードからリードタイムを推定し、開始日を計算します。
 /// </summary>
-internal static class Inference {
-
+internal static class Inference
+{
     /// <summary>
     /// タスクの開始日を自動推論して設定します。
     /// </summary>
@@ -241,7 +240,7 @@ internal static class Inference {
         t.Lead ??= _GuessLeadFromTagsOrTitle(t);
 
         // lead が決まったら start を作る
-        if (t.Lead is {} lead)
+        if (t.Lead is { } lead)
             t.Start = t.Due.Value.Date - lead;
     }
 
@@ -262,7 +261,7 @@ internal static class Inference {
         {
             var daysPart = normalized[(eqIdx + 1)..];
             if (int.TryParse(daysPart, NumberStyles.Integer, CultureInfo.InvariantCulture, out var days)
-                && days is >= 1 and <= MarkdownTaskParser.MaxPaceDays)
+                && days is >= 1 and <= MarkdownTaskParser.MAX_PACE_DAYS)
             {
                 return TimeSpan.FromDays(days);
             }
@@ -322,7 +321,6 @@ internal static class Inference {
     private static bool _ContainsAny(string s, params string[] keys)
     {
         return keys.Any(k => s.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0);
-
     }
 
     private static bool _IsCurrentPeriodSection(string? section)

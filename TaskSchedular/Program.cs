@@ -201,21 +201,20 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
+
 namespace Jiifureit.TaskSchedular;
 
 #region
 
-using System;
-using System.IO;
-using System.Threading.Tasks;
+
 
 #endregion
 
 /// <summary>
 /// アプリケーションのエントリーポイント。コマンドライン引数を解析し、once/watchコマンドを実行します。
 /// </summary>
-internal static class Program {
-
+internal static class Program
+{
     /// <summary>
     /// アプリケーションのメインエントリーポイント。
     /// </summary>
@@ -241,6 +240,7 @@ internal static class Program {
                 _PrintUsage();
                 return 1;
             }
+
             var input = args[1];
             var outPath = _GetArgValue(args, "--out") ?? "prioritized.md";
             Runner.Run(input, outPath);
@@ -254,6 +254,7 @@ internal static class Program {
                 _PrintUsage();
                 return 1;
             }
+
             var input = args[1];
             var outPath = _GetArgValue(args, "--out") ?? "prioritized.md";
             var debounceMs = int.TryParse(_GetArgValue(args, "--debounce-ms"), out var ms) ? ms : 1200;
@@ -277,7 +278,8 @@ internal static class Program {
 
             // Ctrl+C で終了
             var tcs = new TaskCompletionSource();
-            Console.CancelKeyPress += (_, e) => {
+            Console.CancelKeyPress += (_, e) =>
+            {
                 e.Cancel = true;
                 tcs.TrySetResult();
             };

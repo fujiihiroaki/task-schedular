@@ -201,13 +201,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
+
 namespace Jiifureit.TaskSchedular;
 
 #region
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
+
 
 #endregion
 
@@ -215,8 +214,8 @@ using System.Linq;
 /// タスクに優先度スコアを付与し、ランキングを行うクラス。
 /// 期限、手動優先度、開始日、見積もり時間などを考慮してスコアを計算します。
 /// </summary>
-internal static class TaskRanker {
-
+internal static class TaskRanker
+{
     /// <summary>
     /// タスクリストをスコアリングしてランク付けします。
     /// </summary>
@@ -238,7 +237,7 @@ internal static class TaskRanker {
             .OrderByDescending(t => t.Score)
             .ThenBy(t => _EffectiveDate(t) ?? DateTime.MaxValue)
             .ThenBy(t => t.ManualPriority ?? int.MaxValue)
-            .ThenBy(keySelector : t => t.Title, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(keySelector: t => t.Title, StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
 
@@ -261,16 +260,16 @@ internal static class TaskRanker {
         double score = 0;
 
         // Manual priority: p:1 highest
-        if (t.ManualPriority is {} p)
+        if (t.ManualPriority is { } p)
         {
-            var boost = Math.Max(0, 10 - p) * 15;// p=1 -> 135
+            var boost = Math.Max(0, 10 - p) * 15; // p=1 -> 135
             score += boost;
             reasons.Add($"p:{p}(+{boost:0})");
         }
 
         // Urgency based on effective date (start preferred, else due)
         var effective = _EffectiveDate(t);
-        if (effective is {} d)
+        if (effective is { } d)
         {
             var days = (d - today).TotalDays;
             double boost =
@@ -291,7 +290,7 @@ internal static class TaskRanker {
         }
 
         // Quick wins
-        if (t.Estimate is {} est)
+        if (t.Estimate is { } est)
         {
             double boost =
                 est <= TimeSpan.FromMinutes(15) ? 25 :
@@ -309,6 +308,7 @@ internal static class TaskRanker {
             score += 50;
             reasons.Add("tag:urgent(+50)");
         }
+
         if (t.Tags.Contains("blocking"))
         {
             score += 35;
@@ -332,9 +332,9 @@ internal static class TaskRanker {
     /// <returns>フォーマットされた文字列</returns>
     private static string _FormatEst(TimeSpan ts)
     {
-        if (ts.TotalMinutes < 60) return $"{(int) ts.TotalMinutes}m";
-        if (ts.TotalHours < 8) return $"{(int) ts.TotalHours}h";
+        if (ts.TotalMinutes < 60) return $"{(int)ts.TotalMinutes}m";
+        if (ts.TotalHours < 8) return $"{(int)ts.TotalHours}h";
 
-        return $"{(int) (ts.TotalHours / 8)}d";
+        return $"{(int)(ts.TotalHours / 8)}d";
     }
 }

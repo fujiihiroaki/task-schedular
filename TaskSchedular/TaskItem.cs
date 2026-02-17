@@ -201,12 +201,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
+
 namespace Jiifureit.TaskSchedular;
 
 #region
 
-using System;
-using System.Collections.Generic;
+
 
 #endregion
 
@@ -215,8 +215,8 @@ using System.Collections.Generic;
 /// Markdownファイルから解析されたタスクアイテムを表すモデルクラス。
 /// 期限、開始日、優先度、タグなどのメタデータとスコアリング結果を保持します。
 /// </summary>
-internal sealed class TaskItem {
-
+internal sealed class TaskItem
+{
     // ReSharper disable UnusedAutoPropertyAccessor.Global
     public required string RawLine { get; init; }
     // ReSharper restore UnusedAutoPropertyAccessor.Global
@@ -233,17 +233,17 @@ internal sealed class TaskItem {
 
     public DateTime? PeriodEnd { get; init; }
 
-    public DateTime? Due { get; set; }// due:YYYY-MM-DD
+    public DateTime? Due { get; set; } // due:YYYY-MM-DD
 
-    public DateTime? Start { get; set; }// start:YYYY-MM-DD (or inferred)
+    public DateTime? Start { get; set; } // start:YYYY-MM-DD (or inferred)
 
-    public TimeSpan? Lead { get; set; }// lead:90d / 12w / 3m / 1y
+    public TimeSpan? Lead { get; set; } // lead:90d / 12w / 3m / 1y
 
-    public string? Pace { get; set; }// pace:<name> or pace:<name>=<days>
+    public string? Pace { get; set; } // pace:<name> or pace:<name>=<days>
 
-    public int? ManualPriority { get; set; }// p:1
+    public int? ManualPriority { get; set; } // p:1
 
-    public TimeSpan? Estimate { get; set; }// est:30m / 2h / 1d
+    public TimeSpan? Estimate { get; set; } // est:30m / 2h / 1d
 
     public HashSet<string> Tags { get; } = new(StringComparer.OrdinalIgnoreCase);
 
