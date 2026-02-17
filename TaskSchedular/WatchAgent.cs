@@ -210,12 +210,6 @@ using System.Diagnostics;
 
 namespace Jiifureit.TaskSchedular;
 
-#region
-
-
-
-#endregion
-
 /// <summary>
 /// 入力ファイルの変更を監視し、デバウンス処理を行いながら自動的にタスクを再生成するエージェントクラス。
 /// FileSystemWatcherを使用してファイルシステムイベントを検出します。
