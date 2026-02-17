@@ -211,12 +211,6 @@ using System.Text.RegularExpressions;
 
 namespace Jiifureit.TaskSchedular;
 
-#region
-
-
-
-#endregion
-
 /// <summary>
 /// Markdownファイルを解析してタスクアイテムを抽出するパーサークラス。
 /// チェックリスト形式のタスクとメタデータ（due, start, lead, pace, p, est, tag）を解析します。
