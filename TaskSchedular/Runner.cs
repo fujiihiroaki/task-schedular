@@ -210,12 +210,6 @@ using System.Text;
 
 namespace Jiifureit.TaskSchedular;
 
-#region
-
-
-
-#endregion
-
 /// <summary>
 ///     タスク処理のメインフロー（読込→解析→ランク付け→出力）を実行するランナークラス。
 /// </summary>
