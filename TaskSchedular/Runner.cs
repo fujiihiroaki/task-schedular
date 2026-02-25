@@ -323,7 +323,7 @@ internal static class Runner
     /// <param name="today">現在の日付を基準とする比較日。</param>
     /// <returns>
     ///     タスクの優先度を示すセクションラベル文字列を返します。
-    ///     有効開始日や期限により「今すぐ」「次にやる」「今週中」「余裕があれば」に分類されます。
+    ///     有効開始日や期限により「今すぐ」「次にやる」「1週間以内」「余裕があれば」に分類されます。
     /// </returns>
     private static string _GetSectionLabel(TaskItem t, DateTime today)
     {
@@ -331,7 +331,7 @@ internal static class Runner
         if (effective is null) return "余裕があれば";
         if (effective <= today) return "今すぐ";
         if (effective <= today.AddDays(2)) return "次にやる";
-        if (effective <= today.AddDays(7)) return "今週中";
+        if (effective <= today.AddDays(7)) return "1週間以内";
 
         return "余裕があれば";
     }

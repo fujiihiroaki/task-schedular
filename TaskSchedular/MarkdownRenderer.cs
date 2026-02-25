@@ -240,7 +240,7 @@ internal static class MarkdownRenderer
 
         _WriteSection(sb, "今すぐ（着手日/期限が今日以前）", now);
         _WriteSection(sb, "次にやる（〜2日）", next2);
-        _WriteSection(sb, "今週中（〜7日）", week);
+        _WriteSection(sb, "1週間以内（〜7日）", week);
 
         var quick = ranked.Where(t => t.Estimate is { } e && e <= TimeSpan.FromMinutes(30)).ToList();
         _WriteSection(sb, "30分以内で終わる系", quick, dedupe: true);
