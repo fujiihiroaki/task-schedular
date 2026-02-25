@@ -325,7 +325,7 @@ public class MarkdownRendererTests {
         var result = MarkdownRenderer.Render(tasks, today, sourcePath);
 
         // Assert
-        Assert.Contains("## 今週中（〜7日）", result);
+        Assert.Contains("## 1週間以内（〜7日）", result);
         Assert.Contains("1週間後のタスク", result);
     }
 
