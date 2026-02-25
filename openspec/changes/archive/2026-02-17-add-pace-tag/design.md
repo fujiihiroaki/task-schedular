@@ -68,7 +68,7 @@
 - `Console.Error.WriteLine()` で1行警告を出力する
 - フォーマットは「値」「理由」「タスク識別子」を含める  
   例: `[pace] invalid value 'FAST=0' (reason: days out of range 1..2048, id:xxxx, title:タスク名)`
-- その `pace` は設定しない（既存の `lead` 推論へフォールバック）
+- その `pace` は設定しない（既存の `lead` 推論へフォールバック。タグ/キーワード不一致時の既定値は 1 日）
 - 処理は継続する
 
 **理由:** ユーザーが修正箇所を即時特定できるようにするため。
