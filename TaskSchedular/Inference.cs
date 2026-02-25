@@ -308,8 +308,8 @@ internal static class Inference
         if (_ContainsAny(title, "旅行", "出張", "travel"))
             return TimeSpan.FromDays(14);
 
-        // デフォルト：1週間前倒し（過剰に前倒ししない）
-        return TimeSpan.FromDays(7);
+        // デフォルト：1日前倒し（過剰に前倒ししない）
+        return TimeSpan.FromDays(1);
     }
 
     /// <summary>

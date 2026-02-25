@@ -543,7 +543,7 @@ public class InferenceTests {
     }
 
     [Fact]
-    public void ApplyAutoStart_NoSpecialTag_SetsDefault7DaysLead()
+    public void ApplyAutoStart_NoSpecialTag_SetsDefault1DayLead()
     {
         // Arrange
         var due = new DateTime(2026, 3, 1);
@@ -560,7 +560,7 @@ public class InferenceTests {
 
         // Assert
         Assert.NotNull(task.Start);
-        Assert.Equal(due.AddDays(-7), task.Start);
+        Assert.Equal(due.AddDays(-1), task.Start);
     }
 
     [Fact]
